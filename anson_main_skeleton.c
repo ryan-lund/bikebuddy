@@ -1,16 +1,7 @@
 // NOTE: THIS FILE IS JUST BARE SKELETON FOR THE HEAD AND TURN LIGHTS
 // WILL BE INTEGRATED INTO COMPLETE FILE
 
-typedef enum {
-  OFF,
-  ON,
-} head_light_state_t;
-
-typedef enum {
-  OFF,
-  LEFT_ON,
-  RIGHT_ON,
-} turn_light_state_t;
+#include types.h
 
 // Dummy values for now
 const float HEADLIGHT_THRESHOLD = 123456789;
@@ -64,41 +55,41 @@ int main(void) {
       if () {
         // If current roll and yaw are less than left thresholds
         // Will call function to handle lights to blink
-        turn_light_state = LEFT_ON;
+        turn_light_state = LEFT;
       } else if () {
         // If current roll and yaw are greater than right thresholds
         // Will call function to handle lights to blink
-        turn_light_state = RIGHT_ON;
+        turn_light_state = RIGHT;
       } else {
         // If neither, then not turning
         turn_light_state = OFF:
       }
     }
 
-    case LEFT_ON: {
+    case LEFT: {
       if () {
         // If current roll and yaw are less than left thresholds
         // Will call function to handle lights to blink
-        turn_light_state = LEFT_ON;
+        turn_light_state = LEFT;
       } else if () {
         // If current roll and yaw are greater than right thresholds
         // Will call function to handle lights to blink
-        turn_light_state = RIGHT_ON;
+        turn_light_state = RIGHT;
       } else {
         // If neither, then not turning
         turn_light_state = OFF:
       }
     }
 
-    case RIGHT_ON: {
+    case RIGHT: {
       if () {
         // If current roll and yaw are less than left thresholds
         // Will call function to handle lights to blink
-        turn_light_state = LEFT_ON;
+        turn_light_state = LEFT;
       } else if () {
         // If current roll and yaw are greater than right thresholds
         // Will call function to handle lights to blink
-        turn_light_state = RIGHT_ON;
+        turn_light_state = RIGHT;
       } else {
         // If neither, then not turning
         turn_light_state = OFF:

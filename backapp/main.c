@@ -79,13 +79,21 @@ int main(void)
         case OFF: {
             if (tail) {
                 tail_light_state = ON;
+                tail = false;
                 toggle_tail();
+            } else {
+                tail_light_state = OFF;
+                tail = false;
             }
         }
         case ON: {
             if (!tail) {
                 tail_light_state = OFF;
+                tail = false;
                 toggle_tail();
+            } else {
+                tail_light_state = ON;
+                tail = false;
             }
         }
     }
@@ -94,13 +102,21 @@ int main(void)
         case OFF: {
             if (brake) {
                 brake_light_state = ON;
+                brake = false;
                 toggle_brake();
+            } else {
+                brake_light_state = OFF;
+                brake = false;
             }
         }
         case ON: {
             if (!brake) {
                 brake_light_state = OFF;
+                brake = false;
                 toggle_brake();
+            } else {
+                brake_light_state = ON;
+                brake = false;
             }
         }
     }

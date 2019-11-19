@@ -8,6 +8,7 @@
 #include "nrf_delay.h"
 #include "boards.h"
 #include "types.h"
+#include "lights.h"
 
 static simple_ble_config_t ble_config = {
     // c0:98:e5:49:xx:xx

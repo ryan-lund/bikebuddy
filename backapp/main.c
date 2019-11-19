@@ -68,11 +68,50 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
 int main(void)
 {
     switch (turn_light_state) {
-        case OFF:
-
-        case LEFT:
-
-        case RIGHT:
+        case OFF: {
+          if (left) {
+            left = false;
+            tail_light_state = LEFT;
+            toggle_flash_left();
+          } else if (right) {
+            right = false;
+            tail_light_state = RIGHT;
+            toggle_flash_right();
+          } else {
+            off = false;
+            tail_light_state = OFF;
+          }
+        }
+        case LEFT: {
+          if (off) {
+            off = false;
+            tail_light_state = left;
+            toggle_flash_left();
+          } else if (right) {
+            right = false;
+            tail_light_state = RIGHT;
+            toggle_flash_left();
+            toggle_flash_right();
+          } else {
+            left = false;
+            tail_light_state = LEFT;
+          }
+        }
+        case RIGHT: {
+          if (off) {
+            off = false;
+            tail_light_state = left;
+            toggle_flash_left();
+          } else if (left) {
+            left = false;
+            tail_light_state = LEFT;
+            toggle_flash_right();
+            toggle_flash_left();
+          } else {
+            right = false;
+            tail_light_state = RIGHT;
+          }
+        }
     }
 
     switch (tail_light_state) {

@@ -1,7 +1,7 @@
 typedef enum {
   OFF,
   ON,
-} head_light_state_t;
+} light_state_t;
 
 typedef enum {
   OFF,

@@ -115,18 +115,32 @@ int main(void)
     }
 
     switch (tail_light_state) {
-        case OFF:
-
-        case ON:
+        case OFF: {
+            if (tail) {
+                tail_light_state = ON;
+                toggle_tail();
+            }
+        }
+        case ON: {
+            if (!tail) {
+                tail_light_state = OFF;
+                toggle_tail();
+            }
+        }
     }
 
     switch (brake_light_state) {
-        case OFF:
+        case OFF: {
             if (brake) {
                 brake_light_state = ON;
                 toggle_brake();
             }
-        case ON:
-            if (!brake)
+        }
+        case ON: {
+            if (!brake) {
+                brake_light_state = OFF;
+                toggle_brake();
+            }
+        }
     }
 }

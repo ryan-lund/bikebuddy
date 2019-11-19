@@ -8,15 +8,15 @@
 #define BRAKE_PIN 30
 #define FLASH_INTERVAL 1000
 
-void* init_lights(void*);
+void* init_lights(void);
 
-void* toggle_flash_left(void*);
+void* toggle_flash_left(void);
 
-void* toggle_flash_right(void*);
+void* toggle_flash_right(void);
 
-void* toggle_headlight(void*);
+void* toggle_headlight(void);
 
-void* toggle_taillight(void*);
+void* toggle_taillight(void);
 
-void* toggle_brake(void*);
+void* toggle_brake(void);
 #endif // LIGHTS_H_

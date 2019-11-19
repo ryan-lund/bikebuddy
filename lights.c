@@ -11,7 +11,7 @@
 int left_timer_id = 0;
 int right_timer_id = 0;
 
-void* init_lights(void*) {
+void* init_lights(void) {
 	// onfigure pins as outputs
 	// 4: left
 	// 5: right
@@ -35,15 +35,15 @@ void* init_lights(void*) {
 	virtual_timer_init();
 }
 
-void* toggle_left(void*) {
+void* toggle_left(void) {
 	nrf_gpio_pin_toggle(LEFT_PIN);
 }
 
-void* toggle_right(void*) {
+void* toggle_right(void) {
 	nrf_gpio_pin_toggle(RIGHT_PIN);
 }
 
-void* toggle_flash_left(void*) {
+void* toggle_flash_left(void) {
 	if (!left_timer_id) {
 		left_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_left);
 	} else {
@@ -52,7 +52,7 @@ void* toggle_flash_left(void*) {
 	}
 }
 
-void* toggle_flash_right(void*) {
+void* toggle_flash_right(void) {
 	if (!right_timer_id) {
 		righht_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_right);
 	} else {
@@ -61,14 +61,14 @@ void* toggle_flash_right(void*) {
 	}
 }
 
-void* toggle_headlight(void*) {
+void* toggle_headlight(void) {
 	nrf_gpio_pin_toggle(HEAD_PIN);
 }
 
-void* toggle_taillight(void*) {
+void* toggle_taillight(void) {
 	nrf_gpio_pin_toggle(TAIL_PIN);
 }
 
-void* toggle_brake(void*) {
+void* toggle_brake(void) {
 	nrf_gpio_pin_toggle(BRAKE_PIN);
 }

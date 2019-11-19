@@ -8,6 +8,9 @@
 #include "lights.h"
 #include "virtual_timer.h"
 
+int left_timer_id = 0;
+int right_timer_id = 0;
+
 void* init_lights(void*) {
 	// onfigure pins as outputs
 	// 4: left
@@ -29,14 +32,33 @@ void* init_lights(void*) {
 	nrf_gpio_pin_clear(BRAKE_PIN);
 
 	// init virtual timers for left and right turn indicators
+	virtual_timer_init();
 }
 
 void* toggle_left(void*) {
-	return
+	nrf_gpio_pin_toggle(LEFT_PIN);
 }
 
 void* toggle_right(void*) {
-	return
+	nrf_gpio_pin_toggle(RIGHT_PIN);
+}
+
+void* toggle_flash_left(void*) {
+	if (!left_timer_id) {
+		left_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_left);
+	} else {
+		virtual_timer_cancel(left_timer_id);
+		left_timer_id = 0;
+	}
+}
+
+void* toggle_flash_right(void*) {
+	if (!right_timer_id) {
+		righht_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_right);
+	} else {
+		virtual_timer_cancel(right_timer_id);
+		right_timer_id = 0;
+	}
 }
 
 void* toggle_headlight(void*) {

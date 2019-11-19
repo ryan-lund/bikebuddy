@@ -101,7 +101,8 @@ int main(void) {
     }
 
     case LEFT: {
-      if () {
+      if (off) {
+        off = false;
         // If current roll and yaw are less than left thresholds
         // Will call function to handle lights to blink
         rear_turn_light_state = LEFT;

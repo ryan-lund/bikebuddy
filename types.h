@@ -1,12 +1,12 @@
 typedef enum {
-  OFF,
-  ON,
+  LIGHT_OFF,
+  LIGHT_ON,
 } light_state_t;
 
 typedef enum {
-  OFF,
-  LEFT,
-  RIGHT,
+  TURN_OFF,
+  TURN_LEFT,
+  TURN_RIGHT,
 } turn_light_state_t;
 
 typedef enum {

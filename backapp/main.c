@@ -29,9 +29,9 @@ static simple_ble_char_t brake_char = {.uuid16 = 0x2925};
 static simple_ble_char_t turn_char = {.uuid16 = 0x2926};
 
 
-turn_light_state_t turn_light_state = OFF;
-light_state_t tail_light_state = OFF;
-light_state_t brake_light_state = OFF;
+turn_light_state_t turn_light_state = TURN_OFF;
+light_state_t tail_light_state = LIGHT_OFF;
+light_state_t brake_light_state = LIGHT_OFF;
 
 bool left = false;
 bool right = false;
@@ -68,93 +68,93 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
 int main(void)
 {
     switch (turn_light_state) {
-        case OFF: {
+        case TURN_OFF: {
           if (left) {
             left = false;
-            tail_light_state = LEFT;
+            tail_light_state = TURN_LEFT;
             toggle_flash_left();
           } else if (right) {
             right = false;
-            tail_light_state = RIGHT;
+            tail_light_state = TURN_RIGHT;
             toggle_flash_right();
           } else {
             off = false;
-            tail_light_state = OFF;
+            tail_light_state = TURN_OFF;
           }
         }
-        case LEFT: {
+        case TURN_LEFT: {
           if (off) {
             off = false;
-            tail_light_state = left;
+            tail_light_state = TURN_OFF;
             toggle_flash_left();
           } else if (right) {
             right = false;
-            tail_light_state = RIGHT;
+            tail_light_state = TURN_RIGHT;
             toggle_flash_left();
             toggle_flash_right();
           } else {
             left = false;
-            tail_light_state = LEFT;
+            tail_light_state = TURN_LEFT;
           }
         }
-        case RIGHT: {
+        case TURN_RIGHT: {
           if (off) {
             off = false;
-            tail_light_state = left;
+            tail_light_state = TURN_OFF;
             toggle_flash_left();
           } else if (left) {
             left = false;
-            tail_light_state = LEFT;
+            tail_light_state = TURN_LEFT;
             toggle_flash_right();
             toggle_flash_left();
           } else {
             right = false;
-            tail_light_state = RIGHT;
+            tail_light_state = TURN_RIGHT;
           }
         }
     }
 
     switch (tail_light_state) {
-        case OFF: {
+        case LIGHT_OFF: {
             if (tail) {
-                tail_light_state = ON;
+                tail_light_state = LIGHT_ON;
                 tail = false;
                 toggle_tail();
             } else {
-                tail_light_state = OFF;
+                tail_light_state = LIGHT_OFF;
                 tail = false;
             }
         }
-        case ON: {
+        case LIGHT_ON: {
             if (!tail) {
-                tail_light_state = OFF;
+                tail_light_state = LIGHT_OFF;
                 tail = false;
                 toggle_tail();
             } else {
-                tail_light_state = ON;
+                tail_light_state = LIGHT_ON;
                 tail = false;
             }
         }
     }
 
     switch (brake_light_state) {
-        case OFF: {
+        case LIGHT_OFF: {
             if (brake) {
-                brake_light_state = ON;
+                brake_light_state = LIGHT_ON;
                 brake = false;
                 toggle_brake();
             } else {
-                brake_light_state = OFF;
+                brake_light_state = LIGHT_OFF;
                 brake = false;
             }
         }
-        case ON: {
+        case LIGHT_ON: {
             if (!brake) {
-                brake_light_state = OFF;
+                brake_light_state = LIGHT_OFF;
                 brake = false;
                 toggle_brake();
             } else {
-                brake_light_state = ON;
+                brake_light_state = LIGHT_ON;
                 brake = false;
             }
         }

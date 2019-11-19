@@ -43,7 +43,7 @@ int main(void) {
         start_nav = false;
       } else {
         // Remain with no navigataion
-        head_light_state = OFF;
+        nav_state = OFF;
       }
     }
 

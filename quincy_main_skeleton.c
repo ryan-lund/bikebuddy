@@ -24,8 +24,8 @@ static simple_ble_char_t turn_char = {.uuid16 = 0x2926};
 
 
 // configure initial state
-brake_light_state_t brake_light_state = OFF;
-rear_turn_light_state_t rear_turn_light_state = OFF;
+light_state_t brake_light_state = OFF;
+turn_light_state_t rear_turn_light_state = OFF;
 // Initialize sensors here
 
 

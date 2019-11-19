@@ -6,12 +6,13 @@
 #define HEAD_PIN 28
 #define TAIL_PIN 29
 #define BRAKE_PIN 30
+#define FLASH_INTERVAL 1000
 
 void* init_lights(void*);
 
-void* toggle_left(void*);
+void* toggle_flash_left(void*);
 
-void* toggle_right(void*);
+void* toggle_flash_right(void*);
 
 void* toggle_headlight(void*);
 

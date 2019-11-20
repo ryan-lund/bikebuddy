@@ -120,7 +120,7 @@ int main(void)
             if (tail) {
                 tail_light_state = LIGHT_ON;
                 tail = false;
-                toggle_tail();
+                toggle_taillight();
             } else {
                 tail_light_state = LIGHT_OFF;
                 tail = false;
@@ -130,7 +130,7 @@ int main(void)
             if (!tail) {
                 tail_light_state = LIGHT_OFF;
                 tail = false;
-                toggle_tail();
+                toggle_taillight();
             } else {
                 tail_light_state = LIGHT_ON;
                 tail = false;
@@ -143,7 +143,7 @@ int main(void)
             if (brake) {
                 brake_light_state = LIGHT_ON;
                 brake = false;
-                toggle_brake();
+                toggle_brakelight();
             } else {
                 brake_light_state = LIGHT_OFF;
                 brake = false;
@@ -153,7 +153,7 @@ int main(void)
             if (!brake) {
                 brake_light_state = LIGHT_OFF;
                 brake = false;
-                toggle_brake();
+                toggle_brakelight();
             } else {
                 brake_light_state = LIGHT_ON;
                 brake = false;

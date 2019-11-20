@@ -69,6 +69,6 @@ void* toggle_taillight(void) {
 	nrf_gpio_pin_toggle(TAIL_PIN);
 }
 
-void* toggle_brake(void) {
+void* toggle_brakelight(void) {
 	nrf_gpio_pin_toggle(BRAKE_PIN);
 }

@@ -18,5 +18,5 @@ void* toggle_headlight(void);
 
 void* toggle_taillight(void);
 
-void* toggle_brake(void);
+void* toggle_brakelight(void);
 #endif // LIGHTS_H_

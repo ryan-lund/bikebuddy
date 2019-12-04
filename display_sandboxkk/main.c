@@ -342,18 +342,18 @@ void twi_init1 (void)
         nrf_drv_twi_enable(&m_twi_master1);
 }
 
-void testdrawcircle(nrf_drv_twi_t const m_twi_master, uint8_t i2c_addr, uint8_t *buffer) {
+void testdrawcircle(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t *buffer) {
     Adafruit_GFX_init(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT, SSD1306_drawPixel, buffer);
     Adafruit_GFX_setRotation(0);
     for (int16_t i=0; i< Adafruit_GFX_height()/2; i+=2)
     {
             Adafruit_GFX_drawCircle(Adafruit_GFX_width()/2, Adafruit_GFX_height()/2, i, WHITE);
-            SSD1306_display(m_twi_master, SSD1306_I2C_ADDRESS, buffer);
+            SSD1306_display(m_twi_master, i2caddr, buffer);
             nrf_delay_ms(200);
     }
 }
 
-void testdrawText(nrf_drv_twi_t const m_twi_master, uint8_t i2c_addr, uint8_t *buffer)
+void testdrawText(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t *buffer)
 {
     Adafruit_GFX_init(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT, SSD1306_drawPixel, buffer);
     Adafruit_GFX_setCursor(0,0);
@@ -365,7 +365,7 @@ void testdrawText(nrf_drv_twi_t const m_twi_master, uint8_t i2c_addr, uint8_t *b
     Adafruit_GFX_write('l');
     Adafruit_GFX_write('l');
     Adafruit_GFX_write('o');
-    SSD1306_display(m_twi_master, SSD1306_I2C_ADDRESS, buffer);
+    SSD1306_display(m_twi_master, i2caddr, buffer);
 
 }
 
@@ -400,7 +400,7 @@ int main(void)
         nrf_gpio_pin_clear(7);
         nrf_gpio_pin_toggle(7);
         nrf_delay_ms(3000);
-        SSD1306_begin(m_twi_master1, SSD1306_I2C_ADDRESS, SSD1306_SWITCHCAPVCC, false);
+        // SSD1306_begin(m_twi_master1, SSD1306_I2C_ADDRESS, SSD1306_SWITCHCAPVCC, false);
         Adafruit_GFX_init(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT, SSD1306_drawPixel, buffer0);
 
         SSD1306_clearDisplay(buffer0);
@@ -429,16 +429,16 @@ int main(void)
 
                 Adafruit_GFX_init(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT, SSD1306_drawPixel, buffer1);
                 SSD1306_clearDisplay(buffer1);
-                SSD1306_display(m_twi_master1, SSD1306_I2C_ADDRESS, buffer1);
+                SSD1306_display(m_twi_master0, SSD1306_I2C_ADDRESS2, buffer1);
 
-                testdrawcircle(m_twi_master1, SSD1306_I2C_ADDRESS, buffer1);
+                testdrawcircle(m_twi_master0, SSD1306_I2C_ADDRESS2, buffer1);
                 nrf_delay_ms(1000);
-                testdrawText(m_twi_master1, SSD1306_I2C_ADDRESS, buffer1);
+                testdrawText(m_twi_master0, SSD1306_I2C_ADDRESS2, buffer1);
                 nrf_delay_ms(1000);
 
                 SSD1306_clearDisplay(buffer1);
                 Adafruit_GFX_drawBitmap(0, 0,  apple_logo, 128, 64, 1);
-                SSD1306_display(m_twi_master1, SSD1306_I2C_ADDRESS, buffer1);
+                SSD1306_display(m_twi_master0, SSD1306_I2C_ADDRESS2, buffer1);
                 nrf_delay_ms(1000);
 
                 while (true) {

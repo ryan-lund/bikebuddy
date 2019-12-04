@@ -24,6 +24,7 @@ electronut.in
 #define INVERSE 2
 
 #define SSD1306_I2C_ADDRESS   0x3C  // 011110+SA0+RW - 0x3C or 0x3D
+#define SSD1306_I2C_ADDRESS2  0x3D
 // Address for 128x32 is 0x3C
 // Address for 128x64 is 0x3D (default) or 0x3C (if SA0 is grounded)
 
@@ -112,7 +113,7 @@ electronut.in
 #define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
 #define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
 
-int8_t _i2caddr, _vccstate;
+int8_t _vccstate;
 
 void SSD1306_begin(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t vccstate, bool reset);
 void SSD1306_command(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t c);

@@ -244,7 +244,7 @@ void SSD1306_drawPixel(uint8_t *buffer, int16_t x, int16_t y, uint16_t color) {
 
 void SSD1306_begin(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t vccstate, bool reset) {
   _vccstate = vccstate;
-  _i2caddr = i2caddr;
+
 
   // Init sequence
   SSD1306_command(m_twi_master, i2caddr, SSD1306_DISPLAYOFF);                    // 0xAE
@@ -313,7 +313,7 @@ void SSD1306_command(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t 
 {
   ret_code_t ret;
   uint8_t data[] = {0x00, c};
-  ret = nrf_drv_twi_tx(&m_twi_master, _i2caddr, data, 2, false);
+  ret = nrf_drv_twi_tx(&m_twi_master, i2caddr, data, 2, false);
   APP_ERROR_CHECK(ret);
 }
 
@@ -359,7 +359,7 @@ void SSD1306_display(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t 
       i--;
 
       ret_code_t ret;
-      ret = nrf_drv_twi_tx(&m_twi_master, _i2caddr, tmpBuf, sizeof(tmpBuf), false);
+      ret = nrf_drv_twi_tx(&m_twi_master, i2caddr, tmpBuf, sizeof(tmpBuf), false);
       APP_ERROR_CHECK(ret);
     }
 

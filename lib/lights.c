@@ -11,23 +11,43 @@
 int left_timer_id = 0;
 int right_timer_id = 0;
 
-void* init_lights(void) {
-	// onfigure pins as outputs
+void* init_lights_front*(void) {
+	// configure pins as outputs
 	// 4: left
 	// 5: right
 	// 28: headlight
-	// 29: taillight
+	// 29: taillight (not used for front)
 	// 30: brake
 	nrf_gpio_pin_dir_set(LEFT_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 	nrf_gpio_pin_dir_set(RIGHT_PIN, NRF_GPIO_PIN_DIR_OUTPUT); 
 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
-	nrf_gpio_pin_dir_set(TAIL_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 	nrf_gpio_pin_dir_set(BRAKE_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 
 	// insure that all pins are set to low
 	nrf_gpio_pin_clear(LEFT_PIN);
 	nrf_gpio_pin_clear(RIGHT_PIN); 
 	nrf_gpio_pin_clear(HEAD_PIN);
+	nrf_gpio_pin_clear(BRAKE_PIN);
+
+	// init virtual timers for left and right turn indicators
+	virtual_timer_init();
+}
+
+void* init_lights_back*(void) {
+	// configure pins as outputs
+	// 4: left
+	// 5: right
+	// 28: headlight // (not used for back)
+	// 29: taillight
+	// 30: brake
+	nrf_gpio_pin_dir_set(LEFT_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+	nrf_gpio_pin_dir_set(RIGHT_PIN, NRF_GPIO_PIN_DIR_OUTPUT); 
+	nrf_gpio_pin_dir_set(TAIL_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+	nrf_gpio_pin_dir_set(BRAKE_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+
+	// insure that all pins are set to low
+	nrf_gpio_pin_clear(LEFT_PIN);
+	nrf_gpio_pin_clear(RIGHT_PIN); 
 	nrf_gpio_pin_clear(TAIL_PIN);
 	nrf_gpio_pin_clear(BRAKE_PIN);
 

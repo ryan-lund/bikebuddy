@@ -9,8 +9,10 @@
 #include "boards.h"
 #include "types.h"
 #include "lights.h"
+#include "bsm.h"
 
-#define LUX_THRESHOLD 1000
+#define LUX_THRESHOLD 1000 // lux threshold for head/tail lights
+#define BSM_THRESHOLD 1000 // Distance threshold for blind spot monitors
 
 static simple_ble_config_t ble_config = {
     // c0:98:e5:49:xx:xx
@@ -25,7 +27,12 @@ static simple_ble_config_t ble_config = {
 // Application variables
 turn_light_state_t turn_light_state = TURN_OFF;
 light_state_t head_light_state = LIGHT_OFF;
+light_state_t left_bsm_state = LIGHT_OFF;
+light_state_t right_bsm_state = LIGHT_OFF;
+
 uint32_t light_value;
+uint32_t left_bsm_value;
+uint32_t right_bsm_value;
 
 // 3db02924-b2a6-4d47-be1f-0f90ad62a048
 // TODO: change this to be UUID of bike buddy service
@@ -73,7 +80,12 @@ int main(void)
     init_lights_front();
 
     while(1) {
-        light_value = read_light_sensor(); //TODO: add proper function call here;
+        // Read new sensor values
+        light_value = read_light_sensor(); //TODO: add proper function calls here
+        left_bsm_value = read_left_bsm();
+        right_bsm_value = read_right_bsm();
+
+        // Head light FSM
         switch(head_light_state) {
             case LIGHT_OFF: {
                 if (light_value > LUX_THRESHOLD) {
@@ -97,5 +109,44 @@ int main(void)
             }
         }
 
+        // Left BSM FSM
+        switch (left_bsm_state) {
+            case LIGHT_OFF: {
+                if (left_bsm_value < BSM_THRESHOLD) {
+                    left_bsm_on();
+                    left_bsm_state = LIGHT_ON;
+                } else {
+                    left_bsm_state = LIGHT_OFF;
+                }
+            }
+            case LIGHT_ON: {
+                if (left_bsm_value > BSM_THRESHOLD) {
+                    left_bsm_off();
+                    left_bsm_state = LIGHT_OFF;
+                } else {
+                    left_bsm_state = LIGHT_ON;
+                }
+            }
+        }
+
+        // Right BSM FSM
+        switch (right_bsm_state) {
+            case LIGHT_OFF: {
+                if (right_bsm_state < BSM_THRESHOLD) {
+                    right_bsm_on();
+                    right_bsm_state = LIGHT_ON;
+                } else {
+                    right_bsm_state = LIGHT_OFF;
+                }
+            }
+            case LIGHT_ON: {
+                if (right_bsm_value > BSM_THRESHOLD) {
+                    right_bsm_off();
+                    right_bsm_state = LIGHT_OFF;
+                } else {
+                    right_bsm_state = LIGHT_ON;
+                }
+            }
+        }
     }
 }

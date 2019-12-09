@@ -69,6 +69,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "virtual_timer.h"
+#include "lights.h"
 
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
@@ -76,7 +77,7 @@
 #define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
 
-#define DEVICE_NAME                     "Nordic_Blinky"                         /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Bike Buddy Back Module"                /**< Name of device. Will be included in the advertising data. */
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -99,9 +100,6 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
-#define BRAKE_LED 4
-#define RIGHT_LED 28
-#define LEFT_LED 30
 BLE_LBS_DEF(m_lbs);                                                             /**< LED Button Service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
@@ -288,32 +286,17 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t l
 {
     if (led_state == 1)
     {
-        nrf_gpio_pin_toggle(BRAKE_LED);
-
-        NRF_LOG_INFO("Received LED ON!");
-    }
-    else if (led_state == 2)
-    {
-            if (lefttimer_id == 0) {
-                lefttimer_id = virtual_timer_start_repeated (500000 , turnleft_toggle);
-            } else {
-                virtual_timer_cancel(lefttimer_id);
-                nrf_gpio_pin_clear(LEFT_LED);
-                lefttimer_id = 0;
-            }
-        NRF_LOG_INFO("Received LED OFF!");
-    }
-    else if (led_state == 3)
-    {
-            if (righttimer_id == 0) {
-                righttimer_id = virtual_timer_start_repeated (500000 , turnright_toggle);
-            } else {
-                virtual_timer_cancel(righttimer_id);
-                nrf_gpio_pin_clear(RIGHT_LED);
-                righttimer_id = 0;
-            }
-;
-        NRF_LOG_INFO("Received LED OFF!");
+        toggle_brakelight();
+        NRF_LOG_INFO("Recieved toggle to brakelight!");
+    } else if (led_state == 2) {
+        toggle_flash_left();
+        NRF_LOG_INFO("Recieved toggle to left indicator!");
+    } else if (led_state == 3) {
+        toggle_flash_right()
+        NRF_LOG_INFO("Recieved toggle to right indicator!");
+    } else if (led_state == 4) {
+        toggle_taillight();
+        NRF_LOG_INFO("Recieved toggle to taillight");
     }
 }
 
@@ -615,11 +598,12 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    virtual_timer_init();
+    virtual_timer_init(); // may be redundant due to lights
+    lights_init();
     nrf_delay_ms(3000);
 
     // Start execution.
-    NRF_LOG_INFO("Blinky example started.");
+    NRF_LOG_INFO("Bike Buddy Rear Module Started");
     advertising_start();
 
     // Enter main loop.

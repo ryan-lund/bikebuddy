@@ -15,6 +15,6 @@ typedef enum {
 } navigation_state_t;
 
 typedef struct {
-  char  loc[64]; // TODO: is this lorge enough for most addresses?
+  char  loc[64]; // TODO: is this large enough for most addresses?
   float dist;
 } navigation_update_t;

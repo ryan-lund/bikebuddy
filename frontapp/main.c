@@ -68,7 +68,6 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
-#include "virtual_timer.h"
 
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
@@ -288,40 +287,24 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t *
 {
     if (led_state[0] == 1)
     {
-        nrf_gpio_pin_toggle(BRAKE_LED);
 
         NRF_LOG_INFO("Received LED ON! BRAKE");
     }
     else if (led_state[0]== 2)
     {
-            if (lefttimer_id == 0) {
-                lefttimer_id = virtual_timer_start_repeated (500000 , turnleft_toggle);
-            } else {
-                virtual_timer_cancel(lefttimer_id);
-                nrf_gpio_pin_clear(LEFT_LED);
-                lefttimer_id = 0;
-            }
         NRF_LOG_INFO("Received LED OFF! LEFT");
     }
     else if (led_state[0]== 3)
     {
-            if (righttimer_id == 0) {
-                righttimer_id = virtual_timer_start_repeated (500000 , turnright_toggle);
-            } else {
-                virtual_timer_cancel(righttimer_id);
-                nrf_gpio_pin_clear(RIGHT_LED);
-                righttimer_id = 0;
-            }
-;
         NRF_LOG_INFO("Received LED OFF! RIGHT");
     }
     else 
     {
-        NRF_LOG_INFO("%s", *led_state);
-        NRF_LOG_INFO("%d 0", led_state[0]);
-        NRF_LOG_INFO("%d 1", led_state[1]);
-        NRF_LOG_INFO("%d 2", led_state[2]);
-        NRF_LOG_INFO("%d 3", led_state[3]);
+        NRF_LOG_HEXDUMP_INFO(led_state, 32);
+        NRF_LOG_INFO("%c 0", led_state[0]);
+        NRF_LOG_INFO("%c 1", led_state[1]);
+        NRF_LOG_INFO("%c 2", led_state[2]);
+        NRF_LOG_INFO("%c 3", led_state[3]);
     }
 }
 
@@ -623,7 +606,6 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    virtual_timer_init();
     nrf_delay_ms(3000);
 
     // Start execution.

@@ -8,7 +8,9 @@
 #define BRAKE_PIN 30
 #define FLASH_INTERVAL 1000
 
-void* init_lights(void);
+void* init_lights_front(void);
+
+void* init_lights_back(void);
 
 void* toggle_flash_left(void);
 

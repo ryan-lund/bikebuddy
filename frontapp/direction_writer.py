@@ -5,10 +5,11 @@ services=p.getServices()
 for service in services:
    print(service)
 s = p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-c = s.getCharacteristics("00001525-1212-efde-1523-785feabcd123")
+c = s.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
 print(c)
-c.write(bytes('2','utf-8'))
+c.write(bytes("{:<32}".format('test 31.433'), 'utf-8'))
 p.disconnect()
+
 # import struct
 # from bluepy.btle import Peripheral, DefaultDelegate
 # import argparse

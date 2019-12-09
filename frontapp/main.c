@@ -284,15 +284,15 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
  * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
  * @param[in] led_state Written/desired state of the LED.
  */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t led_state)
+static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
 {
-    if (led_state == 1)
+    if (led_state[0] == 1)
     {
         nrf_gpio_pin_toggle(BRAKE_LED);
 
         NRF_LOG_INFO("Received LED ON! BRAKE");
     }
-    else if (led_state == 2)
+    else if (led_state[0]== 2)
     {
             if (lefttimer_id == 0) {
                 lefttimer_id = virtual_timer_start_repeated (500000 , turnleft_toggle);
@@ -303,7 +303,7 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t l
             }
         NRF_LOG_INFO("Received LED OFF! LEFT");
     }
-    else if (led_state == 3)
+    else if (led_state[0]== 3)
     {
             if (righttimer_id == 0) {
                 righttimer_id = virtual_timer_start_repeated (500000 , turnright_toggle);
@@ -317,7 +317,11 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t l
     }
     else 
     {
-        NRF_LOG_INFO("NO LED CHANGE")
+        NRF_LOG_INFO("%s", *led_state);
+        NRF_LOG_INFO("%d 0", led_state[0]);
+        NRF_LOG_INFO("%d 1", led_state[1]);
+        NRF_LOG_INFO("%d 2", led_state[2]);
+        NRF_LOG_INFO("%d 3", led_state[3]);
     }
 }
 
@@ -623,7 +627,7 @@ int main(void)
     nrf_delay_ms(3000);
 
     // Start execution.
-    NRF_LOG_INFO("Blinky example started.");
+    NRF_LOG_INFO("Front App Started.");
     advertising_start();
 
     // Enter main loop.

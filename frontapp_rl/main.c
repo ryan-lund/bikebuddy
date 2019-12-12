@@ -73,11 +73,12 @@
 #include "nrf_twi_mngr.h"
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
-#define CONNECTED_LED                   BSP_BOARD_LED_1                         /**< Is on when device has connected. */
-#define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
+#define CONNECTED_LED                   BSP_BOARD_LED_0                        /**< Is on when device has connected. */
+#define LEDBUTTON_LED                   BSP_BOARD_LED_0                        /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
 
 #define DEVICE_NAME                     "Bike Buddy Front"                         /**< Name of device. Will be included in the advertising data. */
+#define BOARD_SPARKFUN_NRF52840_MINI    1
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -99,8 +100,6 @@
 
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
-#define I2C_SCL                         4
-#define I2C_SDA                         5
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -135,8 +134,7 @@ static ble_gap_adv_data_t m_adv_data =
 #define TWI_INSTANCE_ID     0
 
 /* Indicates if operation on TWI has ended. */
-volatile bool m_xfer_done = false;
-static bool init = false;
+volatile bool _twi_init = false;
 
 /* TWI instance. */
 const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
@@ -393,12 +391,13 @@ static void conn_params_init(void)
  */
 static void advertising_start(void)
 {
+    //NRF_LOG_INFO("STARTING ADVERTISING");
     ret_code_t           err_code;
 
     err_code = sd_ble_gap_adv_start(m_adv_handle, APP_BLE_CONN_CFG_TAG);
     APP_ERROR_CHECK(err_code);
 
-    bsp_board_led_on(ADVERTISING_LED);
+    //bsp_board_led_on(ADVERTISING_LED);
 }
 
 
@@ -578,9 +577,11 @@ static void power_management_init(void)
 void twi_init(void) {
   ret_code_t err_code;
 
+  //NRF_LOG_INFO("STARTING TWI INIT");
+
   const nrf_drv_twi_config_t twi_config = {
-    .scl                = I2C_SCL,
-    .sda                = I2C_SDA,
+    .scl                = ARDUINO_SCL_PIN,
+    .sda                = ARDUINO_SDA_PIN,
     .frequency          = NRF_TWI_FREQ_400K,
   };
 
@@ -589,17 +590,19 @@ void twi_init(void) {
 
   err_code = nrf_twi_mngr_init(&twi_mngr_instance, &twi_config);
   APP_ERROR_CHECK(err_code);
+
+  _twi_init = true;
 }
 
 static void twi_scan(void) {
   ret_code_t err_code;
   uint8_t address;
-  uint8_t sample_data;
+  uint8_t sample_data = 0;
   bool detected_device = false;
 
-  NRF_LOG_INFO("TWI scanner started.");
+  //NRF_LOG_INFO("TWI scanner started.");
   
-  if (!init) {
+  if (!_twi_init) {
     NRF_LOG_INFO("TWI is not init");
     return;
   }
@@ -610,13 +613,13 @@ static void twi_scan(void) {
         NRF_TWI_MNGR_READ(address, sample_data, 1, 0),
     };
 
-    int error = nrf_twi_mngr_perform(&twi_mngr_instance, NULL, test_transfer, 1, NULL);
+    err_code = nrf_twi_mngr_perform(&twi_mngr_instance, NULL, test_transfer, 1, NULL);
       if (err_code == NRF_SUCCESS)
       {
           detected_device = true;
           NRF_LOG_INFO("TWI device detected at address 0x%x.", address);
+          NRF_LOG_FLUSH();
       }
-      NRF_LOG_FLUSH();
   }
 
   if (!detected_device)
@@ -655,30 +658,24 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
+    twi_init(); // IMPORTANT
     nrf_delay_ms(3000);
 
     // Start execution.
     NRF_LOG_INFO("Front App Started.");
     advertising_start();
-
-    twi_init();
-    NRF_LOG_INFO("TWI Init");
+    NRF_LOG_FLUSH();
     twi_scan();
     tsl2561_init(&twi_mngr_instance);
-    NRF_LOG_INFO("TSL2561 Init");
     // Enter main loop.
+
+    uint32_t tsl2561_lux = 0;
     for (;;)
     {
+        tsl2561_lux = tsl2561_get_lux();
         idle_state_handle();
         nrf_delay_ms(1000);
-        NRF_LOG_INFO("LOOPED");
-
-        do
-        {
-            __WFE();
-        }while (m_xfer_done == false);
-
-        //NRF_LOG_INFO("%d \n", tsl2561_get_lux());
+        NRF_LOG_INFO("%d \n", tsl2561_lux);
         NRF_LOG_FLUSH();
     }
 }

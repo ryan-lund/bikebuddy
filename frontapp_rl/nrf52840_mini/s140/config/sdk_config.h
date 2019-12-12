@@ -6191,7 +6191,7 @@
 // <i> will fail.
 
 #ifndef APP_TIMER_CONFIG_OP_QUEUE_SIZE
-#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 10
+#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 15
 #endif
 
 // <q> APP_TIMER_CONFIG_USE_SCHEDULER  - Enable scheduling app_timer events to app_scheduler
@@ -9193,7 +9193,7 @@
 // <e> APP_TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef APP_TIMER_CONFIG_LOG_ENABLED
-#define APP_TIMER_CONFIG_LOG_ENABLED 0
+#define APP_TIMER_CONFIG_LOG_ENABLED 1
 #endif
 // <o> APP_TIMER_CONFIG_LOG_LEVEL  - Default Severity level
  

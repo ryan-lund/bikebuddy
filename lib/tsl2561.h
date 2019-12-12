@@ -28,6 +28,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
+#include "nrf_twi_mngr.h"
 #pragma once 
 #ifndef _TSL2561_H_
 #define _TSL2561_H_
@@ -35,7 +36,7 @@
 #define TSL2561_PACKAGE_CS                  // Lux calculations differ slightly for CS package
 // #define TSL2561_PACKAGE_T_FN_CL
 
-#define TSL2561_ADDR	          (0x72)    // 0111001 shifted left 1 bit = 0x72 (ADDR = GND or floating)
+#define TSL2561_ADDR	            (0x39)    // 0111001 shifted left 1 bit = 0x72 (ADDR = GND or floating)
 #define TSL2561_READBIT           (0x01)
 
 #define TSL2561_COMMAND_BIT       (0x80)    // Must be 1
@@ -145,9 +146,7 @@ typedef enum
 }
 tsl2561Error_t;
 
-tsl2561Error_t tsl2561Init(void);
-tsl2561Error_t tsl2561SetTiming(tsl2561IntegrationTime_t integration, tsl2561Gain_t gain);
-tsl2561Error_t tsl2561GetLuminosity (uint16_t *broadband, uint16_t *ir);
-uint32_t tsl2561CalculateLux(uint16_t ch0, uint16_t ch1);
+void tsl2561_init(const nrf_twi_mngr_t* instance);
+uint32_t tsl2561_get_lux(void);
 
 #endif

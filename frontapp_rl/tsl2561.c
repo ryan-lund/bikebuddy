@@ -31,6 +31,8 @@ static void tsl2561_enable(void) {
 
   int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, enable_transfer, 1, NULL);
   APP_ERROR_CHECK(error);
+  NRF_LOG_INFO("TSL2561: Enabled");
+  NRF_LOG_FLUSH();
 }
 
 static void tsl2561_disable(void) {
@@ -42,6 +44,8 @@ static void tsl2561_disable(void) {
 
   int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, disable_transfer, 1, NULL);
   APP_ERROR_CHECK(error);
+  NRF_LOG_INFO("TSL2561: Disabled");
+  NRF_LOG_FLUSH();
 }
 
 static void tsl2561_set_timing(tsl2561IntegrationTime_t integration, tsl2561Gain_t gain) {
@@ -59,9 +63,12 @@ static void tsl2561_set_timing(tsl2561IntegrationTime_t integration, tsl2561Gain
 	_tsl2561Gain = gain;
 
 	tsl2561_disable();
+  NRF_LOG_INFO("TSL2561: Lux Set");
+  NRF_LOG_FLUSH();
 }
 
 static void tsl2561_get_luminosity(uint16_t *broadband, uint16_t *ir) {
+  NRF_LOG_INFO("TSL2561: Getting luminosity");
 	tsl2561_enable();
 
 	switch (_tsl2561IntegrationTime) {
@@ -95,6 +102,9 @@ static void tsl2561_get_luminosity(uint16_t *broadband, uint16_t *ir) {
   APP_ERROR_CHECK(error);
 
 	tsl2561_disable();
+  NRF_LOG_INFO("TSL2561 broadband value: %d", broadband);
+  NRF_LOG_INFO("TSL2561 ir value: %d", ir);
+  NRF_LOG_FLUSH();
 }
 
 static uint32_t tsl2561_calculate_lux(uint16_t ch0, uint16_t ch1)
@@ -185,6 +195,7 @@ static uint32_t tsl2561_calculate_lux(uint16_t ch0, uint16_t ch1)
 }
 
 uint32_t tsl2561_get_lux(void) {
+  NRF_LOG_INFO("TSL2561: Getting Lux");
 	tsl2561_get_luminosity((uint16_t *)broadband, (uint16_t*)ir);
 	uint16_t broadband_extended = (broadband[1] << 8 | broadband[0]);
 	uint16_t ir_extended = (ir[1] << 8 | ir[0]);
@@ -194,9 +205,7 @@ uint32_t tsl2561_get_lux(void) {
 void tsl2561_init(const nrf_twi_mngr_t* instance) {
   twi_mngr_instance = instance;
   tsl2561_enable();
-  NRF_LOG_INFO("TSL2561 Enabled");
   tsl2561_set_timing(_tsl2561IntegrationTime, _tsl2561Gain);
-  NRF_LOG_INFO("TSL2561 Timing Set");
   tsl2561_disable();
-  NRF_LOG_INFO("TSL2561 Disabled");
+  NRF_LOG_INFO("TSL2561: Init");
 }

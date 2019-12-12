@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include "nrf.h"
 #include "app_util.h"
-#include "nrf_twi_mngr.h"
 #include "nrf_gpio.h"
 #include "display.h"
 #include "lights.h"

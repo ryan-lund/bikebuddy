@@ -1,3 +1,48 @@
+/**
+ * Copyright (c) 2015 - 2019, Nordic Semiconductor ASA
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form, except as embedded into a Nordic
+ *    Semiconductor ASA integrated circuit in a product or a software update for
+ *    such product, must reproduce the above copyright notice, this list of
+ *    conditions and the following disclaimer in the documentation and/or other
+ *    materials provided with the distribution.
+ *
+ * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * 4. This software, with or without modification, must only be used with a
+ *    Nordic Semiconductor ASA integrated circuit.
+ *
+ * 5. Any software provided in binary form under this license must not be reverse
+ *    engineered, decompiled, modified and/or disassembled.
+ *
+ * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+/**
+ * @brief Blinky Sample Application main file.
+ *
+ * This file contains the source code for a sample server application using the LED Button service.
+ */
+
 #include <stdint.h>
 #include <string.h>
 #include "nordic_common.h"
@@ -17,7 +62,6 @@
 #include "ble_lbs.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
-#include "nrf_delay.h"
 #include "nrf_pwr_mgmt.h"
 
 #include "nrf_log.h"
@@ -30,7 +74,7 @@
 #define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
 
-#define DEVICE_NAME                     "Bike Buddy Front"                         /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Nordic_Blinky"                         /**< Name of device. Will be included in the advertising data. */
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -53,9 +97,6 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
-#define BRAKE_LED 4
-#define RIGHT_LED 28
-#define LEFT_LED 30
 BLE_LBS_DEF(m_lbs);                                                             /**< LED Button Service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
@@ -81,18 +122,6 @@ static ble_gap_adv_data_t m_adv_data =
 
     }
 };
-
-int lefttimer_id = 0;
-int righttimer_id = 0;
-
-void turnleft_toggle() {
-    nrf_gpio_pin_toggle(LEFT_LED);
-}
-
-void turnright_toggle() {
-    nrf_gpio_pin_toggle(RIGHT_LED);
-}
-
 
 /**@brief Function for assert macro callback.
  *
@@ -238,28 +267,17 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
  * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
  * @param[in] led_state Written/desired state of the LED.
  */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
+static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t led_state)
 {
-    if (led_state[0] == 1)
+    if (led_state)
     {
-
-        NRF_LOG_INFO("Received LED ON! BRAKE");
+        bsp_board_led_on(LEDBUTTON_LED);
+        NRF_LOG_INFO("Received LED ON!");
     }
-    else if (led_state[0]== 2)
+    else
     {
-        NRF_LOG_INFO("Received LED OFF! LEFT");
-    }
-    else if (led_state[0]== 3)
-    {
-        NRF_LOG_INFO("Received LED OFF! RIGHT");
-    }
-    else 
-    {
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
-        NRF_LOG_INFO("%c 0", led_state[0]);
-        NRF_LOG_INFO("%c 1", led_state[1]);
-        NRF_LOG_INFO("%c 2", led_state[2]);
-        NRF_LOG_INFO("%c 3", led_state[3]);
+        bsp_board_led_off(LEDBUTTON_LED);
+        NRF_LOG_INFO("Received LED OFF!");
     }
 }
 
@@ -540,3 +558,37 @@ static void idle_state_handle(void)
         nrf_pwr_mgmt_run();
     }
 }
+
+
+/**@brief Function for application main entry.
+ */
+int main(void)
+{
+    // Initialize.
+    log_init();
+    leds_init();
+    timers_init();
+    buttons_init();
+    power_management_init();
+    ble_stack_init();
+    gap_params_init();
+    gatt_init();
+    services_init();
+    advertising_init();
+    conn_params_init();
+
+    // Start execution.
+    NRF_LOG_INFO("Blinky example started.");
+    advertising_start();
+
+    // Enter main loop.
+    for (;;)
+    {
+        idle_state_handle();
+    }
+}
+
+
+/**
+ * @}
+ */

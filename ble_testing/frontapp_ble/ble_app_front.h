@@ -30,7 +30,7 @@
 #define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
 
-#define DEVICE_NAME                     "Bike Buddy Front"                         /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "BikeBuddyFront"                         /**< Name of device. Will be included in the advertising data. */
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -233,59 +233,6 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 }
 
 
-/**@brief Function for handling write events to the LED characteristic.
- *
- * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
- * @param[in] led_state Written/desired state of the LED.
- */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
-{
-    if (led_state[0] == 1)
-    {
-
-        NRF_LOG_INFO("Received LED ON! BRAKE");
-    }
-    else if (led_state[0]== 2)
-    {
-        NRF_LOG_INFO("Received LED OFF! LEFT");
-    }
-    else if (led_state[0]== 3)
-    {
-        NRF_LOG_INFO("Received LED OFF! RIGHT");
-    }
-    else 
-    {
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
-        NRF_LOG_INFO("%c 0", led_state[0]);
-        NRF_LOG_INFO("%c 1", led_state[1]);
-        NRF_LOG_INFO("%c 2", led_state[2]);
-        NRF_LOG_INFO("%c 3", led_state[3]);
-    }
-}
-
-
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    ret_code_t         err_code;
-    ble_lbs_init_t     init     = {0};
-    nrf_ble_qwr_init_t qwr_init = {0};
-
-    // Initialize Queued Write Module.
-    qwr_init.error_handler = nrf_qwr_error_handler;
-
-    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
-
-    // Initialize LBS.
-    init.led_write_handler = led_write_handler;
-
-    err_code = ble_lbs_init(&m_lbs, &init);
-    APP_ERROR_CHECK(err_code);
-}
-
-
 /**@brief Function for handling the Connection Parameters Module.
  *
  * @details This function will be called for all events in the Connection Parameters Module that
@@ -461,53 +408,6 @@ static void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-
-/**@brief Function for handling events from the button handler module.
- *
- * @param[in] pin_no        The pin that the event applies to.
- * @param[in] button_action The button action (press/release).
- */
-static void button_event_handler(uint8_t pin_no, uint8_t button_action)
-{
-    ret_code_t err_code;
-
-    switch (pin_no)
-    {
-        case LEDBUTTON_BUTTON:
-            NRF_LOG_INFO("Send button state change.");
-            err_code = ble_lbs_on_button_change(m_conn_handle, &m_lbs, button_action);
-            if (err_code != NRF_SUCCESS &&
-                err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
-                err_code != NRF_ERROR_INVALID_STATE &&
-                err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-            {
-                APP_ERROR_CHECK(err_code);
-            }
-            break;
-
-        default:
-            APP_ERROR_HANDLER(pin_no);
-            break;
-    }
-}
-
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    ret_code_t err_code;
-
-    //The array must be static because a pointer to it will be saved in the button handler module.
-    static app_button_cfg_t buttons[] =
-    {
-        {LEDBUTTON_BUTTON, false, BUTTON_PULL, button_event_handler}
-    };
-
-    err_code = app_button_init(buttons, ARRAY_SIZE(buttons),
-                               BUTTON_DETECTION_DELAY);
-    APP_ERROR_CHECK(err_code);
-}
 
 
 static void log_init(void)

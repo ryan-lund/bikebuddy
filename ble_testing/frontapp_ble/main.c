@@ -26,8 +26,11 @@
 #include "nrf_log_default_backends.h"
 
 
-static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
+char direction[64];
+static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state, uint16_t len)
 {
+    memcpy(direction, led_state, sizeof(direction));
+    NRF_LOG_INFO("%s", direction);
     if (led_state[0] == 1)
     {
         ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);

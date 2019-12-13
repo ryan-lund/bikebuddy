@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 import bluepy.btle as btle
-p = btle.Peripheral("E8:40:BC:F6:89:3E", "random")
-services=p.getServices()
-for service in services:
-   print(service)
-s = p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-c = s.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-print(c)
-c.write(bytes("{:<32}".format('test 31.433'), 'utf-8'))
-p.disconnect()
+
+devices = ["E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"]
+for device_mac in devices:
+    p = btle.Peripheral(device_mac, "random")
+    services=p.getServices()
+    for service in services:
+       print(service)
+    s = p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    c = s.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print(c)
+    c.write(bytes("{:<32}".format('test 31.433'), 'utf-8'))
+    p.disconnect()
 
 # import struct
 # from bluepy.btle import Peripheral, DefaultDelegate

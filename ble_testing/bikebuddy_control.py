@@ -1,25 +1,39 @@
 #!/usr/bin/env python3
 import bluepy.btle as btle
 
-devices = ["E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"]
-for device_mac in devices[:1]:
-    p = btle.Peripheral(device_mac, "random")
-    services=p.getServices()
-    for service in services:
-       print(service)
-    s = p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    c_btn = s.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    print(c_btn)
-    c_led = s.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    print(c_led)
-    # c_led.write(bytes("{:<32}".format('1'), 'utf-8'))
-    c_led.write(bytes.fromhex('01'))
-    for _ in range(5):
-        print(c_btn.read())
-    c_led.write(bytes.fromhex('08'))
-    for _ in range(5):
-        print(c_btn.read())
-    p.disconnect()
+front_mac, back_mac = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
+print("Connecting to Front Module...")
+front_p = btle.Peripheral(front_mac, "random")
+print("Connected to Front Module!")
+print("Connecting to Back Module...")
+back_p = btle.Peripheral(back_mac, "random")
+print("Connected to Back Module!")
+
+
+# Set up services and characteristics
+front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+front_back_ctrl_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+print(front_back_ctrl_char)
+front_ctrl_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+print(front_ctrl_char)
+# c_led.write(bytes("{:<32}".format('1'), 'utf-8'))
+
+back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+back_ctrl_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+print(back_ctrl_char)
+
+front_ctrl_char.write(bytes.fromhex('01'))
+for _ in range(5):
+    back_ctrl_state = front_back_ctrl_char.read()
+    print(back_ctrl_state)
+    back_ctrl_char.write(back_ctrl_state)
+front_ctrl_char.write(bytes.fromhex('00'))
+for _ in range(5):
+    back_ctrl_state = front_back_ctrl_char.read()
+    print(back_ctrl_state)
+    back_ctrl_char.write(back_ctrl_state)
+front_p.disconnect()
+back_p.disconnect()
 
 # import struct
 # from bluepy.btle import Peripheral, DefaultDelegate

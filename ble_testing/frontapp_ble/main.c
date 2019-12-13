@@ -26,7 +26,7 @@
 #include "nrf_log_default_backends.h"
 
 
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
+static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
 {
     if (led_state[0] == 1)
     {
@@ -43,7 +43,7 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t *
     }
     else 
     {
-        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
         NRF_LOG_HEXDUMP_INFO(led_state, 32);
     }
 }
@@ -61,51 +61,12 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 
     // Initialize LBS.
-    init.led_write_handler = led_write_handler;
+    init.front_write_handler = front_write_handler;
 
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
 }
 
-// static void button_event_handler(uint8_t pin_no, uint8_t button_action)
-// {
-//     ret_code_t err_code;
-
-//     switch (pin_no)
-//     {
-//         case LEDBUTTON_BUTTON:
-//             NRF_LOG_INFO("Send button state change.");
-//             err_code = ble_lbs_on_button_change(m_conn_handle, &m_lbs, button_action);
-//             if (err_code != NRF_SUCCESS &&
-//                 err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
-//                 err_code != NRF_ERROR_INVALID_STATE &&
-//                 err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-//             {
-//                 APP_ERROR_CHECK(err_code);
-//             }
-//             break;
-
-//         default:
-//             APP_ERROR_HANDLER(pin_no);
-//             break;
-//     }
-// }
-
-
-// static void buttons_init(void)
-// {
-//     ret_code_t err_code;
-
-//     //The array must be static because a pointer to it will be saved in the button handler module.
-//     static app_button_cfg_t buttons[] =
-//     {
-//         {LEDBUTTON_BUTTON, false, BUTTON_PULL, button_event_handler}
-//     };
-
-//     err_code = app_button_init(buttons, ARRAY_SIZE(buttons),
-//                                BUTTON_DETECTION_DELAY);
-//     APP_ERROR_CHECK(err_code);
-// }
 
 
 /**@brief Function for application main entry.

@@ -475,6 +475,7 @@ static void power_management_init(void)
 }
 
 
+
 /**@brief Function for handling the idle state (main loop).
  *
  * @details If there is no pending log operation, then sleep until next the next event occurs.

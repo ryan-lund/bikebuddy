@@ -30,7 +30,7 @@
 #define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
 
-#define DEVICE_NAME                     "Bike Buddy Front"                         /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "BikeBuddyBack"                         /**< Name of device. Will be included in the advertising data. */
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -231,60 +231,6 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
-
-
-/**@brief Function for handling write events to the LED characteristic.
- *
- * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
- * @param[in] led_state Written/desired state of the LED.
- */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
-{
-    if (led_state[0] == 1)
-    {
-
-        NRF_LOG_INFO("Received LED ON! BRAKE");
-    }
-    else if (led_state[0]== 2)
-    {
-        NRF_LOG_INFO("Received LED OFF! LEFT");
-    }
-    else if (led_state[0]== 3)
-    {
-        NRF_LOG_INFO("Received LED OFF! RIGHT");
-    }
-    else 
-    {
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
-        NRF_LOG_INFO("%c 0", led_state[0]);
-        NRF_LOG_INFO("%c 1", led_state[1]);
-        NRF_LOG_INFO("%c 2", led_state[2]);
-        NRF_LOG_INFO("%c 3", led_state[3]);
-    }
-}
-
-
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    ret_code_t         err_code;
-    ble_lbs_init_t     init     = {0};
-    nrf_ble_qwr_init_t qwr_init = {0};
-
-    // Initialize Queued Write Module.
-    qwr_init.error_handler = nrf_qwr_error_handler;
-
-    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
-
-    // Initialize LBS.
-    init.led_write_handler = led_write_handler;
-
-    err_code = ble_lbs_init(&m_lbs, &init);
-    APP_ERROR_CHECK(err_code);
-}
-
 
 /**@brief Function for handling the Connection Parameters Module.
  *
@@ -527,6 +473,7 @@ static void power_management_init(void)
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
 }
+
 
 
 /**@brief Function for handling the idle state (main loop).

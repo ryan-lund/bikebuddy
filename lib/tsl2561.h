@@ -30,8 +30,6 @@
 /**************************************************************************/
 #include "nrf_twi_mngr.h"
 #pragma once 
-#ifndef _TSL2561_H_
-#define _TSL2561_H_
 
 #define TSL2561_PACKAGE_CS                  // Lux calculations differ slightly for CS package
 // #define TSL2561_PACKAGE_T_FN_CL
@@ -148,5 +146,3 @@ tsl2561Error_t;
 
 void tsl2561_init(const nrf_twi_mngr_t* instance);
 uint32_t tsl2561_get_lux(void);
-
-#endif

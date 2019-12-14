@@ -129,15 +129,6 @@ static ble_gap_adv_data_t m_adv_data =
 int lefttimer_id = 0;
 int righttimer_id = 0;
 
-void turnleft_toggle() {
-    nrf_gpio_pin_toggle(LEFT_LED);
-}
-
-void turnright_toggle() {
-    nrf_gpio_pin_toggle(RIGHT_LED);
-}
-
-
 /**@brief Function for assert macro callback.
  *
  * @details This function will be called in case of an assert in the SoftDevice.

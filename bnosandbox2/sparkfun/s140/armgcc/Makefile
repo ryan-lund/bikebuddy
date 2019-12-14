@@ -57,6 +57,9 @@ SRC_FILES += \
 	$(PROJ_DIR)/SSD1306/Adafruit_GFX.c \
   $(PROJ_DIR)/BNO055_driver/bno055.c \
   $(PROJ_DIR)/BNO055_driver/imu.c \
+  $(PROJ_DIR)/virtual_timer_linked_list.c \
+  $(PROJ_DIR)/virtual_timer.c \
+  $(PROJ_DIR)/lights.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \

@@ -10,16 +10,16 @@
 #define FLASH_INTERVAL 500000
 #endif
 
-void* init_lights(void);
+void lights_init(void);
 
-void* toggle_left(void);
+void toggle_left(void);
 
-void* toggle_right(void);
+void toggle_right(void);
 
-void* toggle_flash_left(void);
+void toggle_flash_left(void);
 
-void* toggle_flash_right(void);
+void toggle_flash_right(void);
 
-void* toggle_taillight(void);
+void toggle_taillight(void);
 
-void* toggle_brakelight(void);
+void toggle_brakelight(void);

@@ -5,8 +5,8 @@
 
 #define BSM_LEFT_TRIG_PIN 4
 #define BSM_LEFT_ECHO_PIN 5
-#define BSM_LEFT_TRIG_PIN 28
-#define BSM_LEFT_ECHO_PIN 29
+#define BSM_RIGHT_TRIG_PIN 28
+#define BSM_RIGHT_ECHO_PIN 29
 
 #define BSM_THRESHOLD 122 // distance in cm
 #define BSM_TIMEOUT	8 // timeout time ms

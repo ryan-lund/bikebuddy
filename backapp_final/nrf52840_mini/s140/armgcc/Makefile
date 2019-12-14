@@ -55,8 +55,12 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/twi_mngr/nrf_twi_mngr.c \
   $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/libraries/cli/nrf_cli.c \
+  $(PROJ_DIR)/lib/lights.c \
+  $(PROJ_DIR)/lib/bsm.c \
+  $(PROJ_DIR)/lib/virtual_timer.c \
+  $(PROJ_DIR)/lib/virtual_timer_linked_list.c \
+  $(PROJ_DIR)/lib/ble_lbs.c \
   $(PROJ_DIR)/main.c \
-  $(PROJ_DIR)/tsl2561.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -74,6 +78,7 @@ SRC_FILES += \
 
 # Include folders common to all targets
 INC_FOLDERS += \
+  $(PROJ_DIR)/lib \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \
   $(SDK_ROOT)/components/nfc/t4t_parser/hl_detection_procedure \

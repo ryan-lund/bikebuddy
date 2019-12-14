@@ -3,14 +3,13 @@
 #include "nrf.h"
 #include "app_util.h"
 #include "nrf_gpio.h"
-#include "display.h"
 #include "lights.h"
 #include "virtual_timer.h"
 
 int left_timer_id = 0;
 int right_timer_id = 0;
 
-void* init_lights(void) {
+void lights_init(void) {
 	// configure pins as outputs
 	// 4: left
 	// 5: right
@@ -26,20 +25,17 @@ void* init_lights(void) {
 	nrf_gpio_pin_clear(RIGHT_PIN); 
 	nrf_gpio_pin_clear(TAIL_PIN);
 	nrf_gpio_pin_clear(BRAKE_PIN);
-
-	// init virtual timers for left and right turn indicators
-	virtual_timer_init();
 }
 
-void* toggle_left(void) {
+void toggle_left(void) {
 	nrf_gpio_pin_toggle(LEFT_PIN);
 }
 
-void* toggle_right(void) {
+void toggle_right(void) {
 	nrf_gpio_pin_toggle(RIGHT_PIN);
 }
 
-void* toggle_flash_left(void) {
+void toggle_flash_left(void) {
 	if (!left_timer_id) {
 		left_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_left);
 	} else {
@@ -49,9 +45,9 @@ void* toggle_flash_left(void) {
 	}
 }
 
-void* toggle_flash_right(void) {
+void toggle_flash_right(void) {
 	if (!right_timer_id) {
-		righht_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_right);
+		right_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_right);
 	} else {
 		virtual_timer_cancel(right_timer_id);
 		nrf_gpio_pin_clear(RIGHT_PIN);
@@ -59,10 +55,10 @@ void* toggle_flash_right(void) {
 	}
 }
 
-void* toggle_taillight(void) {
+void toggle_taillight(void) {
 	nrf_gpio_pin_toggle(TAIL_PIN);
 }
 
-void* toggle_brakelight(void) {
+void toggle_brakelight(void) {
 	nrf_gpio_pin_toggle(BRAKE_PIN);
 }

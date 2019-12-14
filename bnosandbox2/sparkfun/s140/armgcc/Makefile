@@ -53,7 +53,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
-  $(PROJ_DIR)/SSD1306/SSD1306.c \
+  $(PROJ_DIR)/SSD1306/SSD1306_mult.c \
 	$(PROJ_DIR)/SSD1306/Adafruit_GFX.c \
   $(PROJ_DIR)/BNO055_driver/bno055.c \
   $(PROJ_DIR)/BNO055_driver/imu.c \

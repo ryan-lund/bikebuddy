@@ -27,6 +27,10 @@
 #include "nrf_log_default_backends.h"
 #include "nrf_drv_twi.h"
 
+#include "SSD1306.h"
+#include "Adafruit_GFX.h"
+#include "buffers.h"
+
 // nrf_drv_twi_t* _m_twi_master;
 #define SSD1306_CONFIG_VDD_PIN 04
 #define SSD1306_CONFIG_SCL_PIN_0 05
@@ -34,6 +38,8 @@
 #define SSD1306_CONFIG_SCL_PIN_1 29
 #define SSD1306_CONFIG_SDA_PIN_1 30
 
+
+static uint8_t buffer0[SSD1306_128_32_LCDWIDTH * SSD1306_128_32_LCDHEIGHT / 8];
 
 
 static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
@@ -141,6 +147,40 @@ void twi_init0 (void)
         nrf_drv_twi_enable(&m_twi_master0);
 }
 
+void testdrawcircle(nrf_drv_twi_t const m_twi_master, uint8_t i2caddr, uint8_t *buffer) {
+    Adafruit_GFX_init(SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_setRotation(0);
+    for (int16_t i=0; i< Adafruit_GFX_height()/2; i+=2)
+    {
+            Adafruit_GFX_drawCircle(Adafruit_GFX_width()/2, Adafruit_GFX_height()/2, i, WHITE);
+            SSD1306_display(m_twi_master, i2caddr, buffer, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+            nrf_delay_ms(200);
+    }
+}
+
+void testdrawLeftTriangle(uint8_t *buffer)
+{
+//     void drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t color);
+// void fillRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t color);
+
+    Adafruit_GFX_init(SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_drawRect(20, 0, 40, 15, WHITE);
+    Adafruit_GFX_fillRect(20, 0, 40, 15, WHITE);
+    Adafruit_GFX_drawTriangle(0, 15, 40, 32, 80, 15, WHITE);
+    Adafruit_GFX_fillTriangle(0, 15, 40, 32, 80, 15, WHITE);
+
+}
+
+void testdrawBSTriangle(uint8_t *buffer)
+{
+//     void drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t color);
+// void fillRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t color);
+
+    Adafruit_GFX_init(SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_drawTriangle(96, 16, 128, 32, 128, 0, WHITE);
+    Adafruit_GFX_fillTriangle(96, 16, 128, 32, 128, 0, WHITE);
+
+}
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -181,6 +221,31 @@ int main(void)
     bno055_read_chip_id(&chip_id);
 	NRF_LOG_INFO("chip id: %x", chip_id);
 
+    SSD1306_begin(m_twi_master0, SSD1306_I2C_ADDRESS, SSD1306_SWITCHCAPVCC, false, SSD1306_128_32, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    NRF_LOG_INFO("INITIALIZED SSD");
+    SSD1306_clearDisplay(buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    Adafruit_GFX_init(SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT, SSD1306_drawPixel, buffer0);
+    NRF_LOG_INFO("INITIALIZED adafruit");
+
+    SSD1306_clearDisplay(buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    NRF_LOG_INFO("cleared display");
+    Adafruit_GFX_drawBitmap(0, 0,  el_logo, 128, 32, 1);
+    SSD1306_display(m_twi_master0, SSD1306_I2C_ADDRESS, buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    nrf_delay_ms(1000);
+
+    SSD1306_clearDisplay(buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    NRF_LOG_INFO("cleared display");
+    testdrawLeftTriangle(buffer0);
+    testdrawBSTriangle(buffer0);
+    //testdrawcircle(m_twi_master0, SSD1306_I2C_ADDRESS, buffer0);
+    //testdrawText(buffer0);
+    SSD1306_display(m_twi_master0, SSD1306_I2C_ADDRESS, buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    //SSD1306_display(m_twi_master0, SSD1306_I2C_ADDRESS, buffer0, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+
+
+    NRF_LOG_INFO("DISPLAY0_1 INITIALIZED");
+
+
     // Enter main loop.
     for (;;)
     {
@@ -188,7 +253,7 @@ int main(void)
         // imu_reinit();
         // NRF_LOG_INFO("IMU INITIALIZED");
         bno055_convert_double_linear_accel_x_msq(&d_linear_accel_datax);
-        NRF_LOG_INFO("lin accel %d", d_linear_accel_datax);
+        //NRF_LOG_INFO("lin accel %d", d_linear_accel_datax);
         NRF_LOG_FLUSH();
     }
 }

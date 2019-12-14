@@ -302,6 +302,7 @@ static uint8_t buffer1[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] =
 
 
 const nrf_drv_twi_t m_twi_master0 = NRF_DRV_TWI_INSTANCE(0);
+
 const nrf_drv_twi_t m_twi_master1 = NRF_DRV_TWI_INSTANCE(1);
 /**
  * @brief TWI initialization.

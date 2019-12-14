@@ -38,7 +38,7 @@ uint8_t * _buffer;
 bool  wrap; // If set, 'wrap' text at right edge of display
 
 // function pointer for drawPixels
-typedef void (*DrawPixelHandler)(uint8_t *buffer, int16_t x, int16_t y, uint16_t color) ;
+typedef void (*DrawPixelHandler)(uint8_t *buffer, int16_t x, int16_t y, uint16_t color, uint8_t width, uint8_t height) ;
 DrawPixelHandler _drawPixel;
 
 // need to pass in the handler for drawing a pixel

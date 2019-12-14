@@ -468,6 +468,6 @@ int16_t Adafruit_GFX_height(void) {
 
 void Adafruit_GFX_drawPixel(int16_t x, int16_t y, uint16_t color) {
   if(_drawPixel) {
-    _drawPixel(_buffer, x, y, color);
+    _drawPixel(_buffer, x, y, color, _width, _height);
   }
 }

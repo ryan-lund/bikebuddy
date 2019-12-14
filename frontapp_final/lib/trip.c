@@ -3,6 +3,7 @@
 #include "nrf.h"
 #include "app_util.h"
 #include "nrf_gpio.h"
+#include "trip.h"
 #include "virtual_timer.h"
 
 uint32_t time_timer_id = 0;

@@ -20,10 +20,20 @@
 #include "nrf_ble_qwr.h"
 #include "nrf_delay.h"
 #include "nrf_pwr_mgmt.h"
+#include "imu.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+#include "nrf_drv_twi.h"
+
+// nrf_drv_twi_t* _m_twi_master;
+#define SSD1306_CONFIG_VDD_PIN 04
+#define SSD1306_CONFIG_SCL_PIN_0 05
+#define SSD1306_CONFIG_SDA_PIN_0 28
+#define SSD1306_CONFIG_SCL_PIN_1 29
+#define SSD1306_CONFIG_SDA_PIN_1 30
+
 
 
 static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
@@ -108,6 +118,29 @@ static void services_init(void)
 // }
 
 
+
+const nrf_drv_twi_t m_twi_master0 = NRF_DRV_TWI_INSTANCE(0);
+/**
+ * @brief TWI initialization.
+ */
+void twi_init0 (void)
+{
+        ret_code_t err_code;
+
+        const nrf_drv_twi_config_t twi_sensors_config = {
+                .scl                = SSD1306_CONFIG_SCL_PIN_0,
+                .sda                = SSD1306_CONFIG_SDA_PIN_0,
+                .frequency          = NRF_TWI_FREQ_400K,
+                .interrupt_priority = APP_IRQ_PRIORITY_LOWEST
+        };
+
+        //err_code = nrf_drv_twi_init(&m_twi_lis2dh12, &twi_lis2dh12_config, twi_handler, NULL);
+        err_code = nrf_drv_twi_init(&m_twi_master0, &twi_sensors_config, NULL, NULL);    // twi in blocking mode.
+        APP_ERROR_CHECK(err_code);
+
+        nrf_drv_twi_enable(&m_twi_master0);
+}
+
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -116,6 +149,9 @@ int main(void)
     nrf_gpio_cfg_output(BRAKE_LED);
     nrf_gpio_cfg_output(LEFT_LED);
     nrf_gpio_cfg_output(RIGHT_LED);
+    nrf_gpio_cfg_output(8);
+    nrf_gpio_cfg_output(7);
+    twi_init0();
     log_init();
     leds_init();
     timers_init();
@@ -130,19 +166,30 @@ int main(void)
     nrf_delay_ms(3000);
 
     // Start execution.
-    NRF_LOG_INFO("Front App Started.");
+    NRF_LOG_INFO("BNO SANDBOX2 started.");
     advertising_start();
+
+    unsigned char accel_calib_status = 0;
+	u8 chip_id = 0;
+
+    // Start execution.
+
+    imu_init(&m_twi_master0);
+    NRF_LOG_INFO("IMU INITIALIZED");
+    double d_linear_accel_datax;
+
+    bno055_read_chip_id(&chip_id);
+	NRF_LOG_INFO("chip id: %x", chip_id);
 
     // Enter main loop.
     for (;;)
     {
         idle_state_handle();
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 1")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 0")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
+        // imu_reinit();
+        // NRF_LOG_INFO("IMU INITIALIZED");
+        bno055_convert_double_linear_accel_x_msq(&d_linear_accel_datax);
+        NRF_LOG_INFO("lin accel %d", d_linear_accel_datax);
+        NRF_LOG_FLUSH();
     }
 }
 

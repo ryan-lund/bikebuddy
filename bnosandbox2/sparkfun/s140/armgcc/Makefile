@@ -23,6 +23,10 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
   $(SDK_ROOT)/components/libraries/scheduler/app_scheduler.c \
   $(SDK_ROOT)/components/libraries/timer/app_timer2.c \
+  $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_twi.c \
+  $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_uart.c \
+    $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twi.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twim.c \
   $(SDK_ROOT)/components/libraries/util/app_util_platform.c \
   $(SDK_ROOT)/components/libraries/timer/drv_rtc.c \
   $(SDK_ROOT)/components/libraries/hardfault/hardfault_implementation.c \
@@ -52,7 +56,7 @@ SRC_FILES += \
   $(PROJ_DIR)/SSD1306/SSD1306.c \
 	$(PROJ_DIR)/SSD1306/Adafruit_GFX.c \
   $(PROJ_DIR)/BNO055_driver/bno055.c \
-  $(PROJ_DIR)/imu.c \
+  $(PROJ_DIR)/BNO055_driver/imu.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \

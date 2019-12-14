@@ -4,7 +4,6 @@
 #include "nrf.h"
 #include "app_error.h"
 #include "ble.h"
-#include "ble_app.h"
 #include "ble_err.h"
 #include "ble_hci.h"
 #include "ble_srv_common.h"
@@ -15,7 +14,6 @@
 #include "boards.h"
 #include "app_timer.h"
 #include "app_button.h"
-#include "ble_lbs.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
 #include "nrf_delay.h"
@@ -24,6 +22,14 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+static void log_init(void)
+{
+    ret_code_t err_code = NRF_LOG_INIT(NULL);
+    APP_ERROR_CHECK(err_code);
+
+    NRF_LOG_DEFAULT_BACKENDS_INIT();
+}
+
 
 /**@brief Function for application main entry.
  */

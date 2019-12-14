@@ -737,14 +737,16 @@ int main(void)
 
     // FSM for turnlights.
     polar_accel = bno055_get_polar_acceleration();
+    // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
+    switch_state = turn_switch_get_state();
     switch (turn_light_state) {
         case OFF: {
-            if (polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
                 // If current polar_acceleration pass threshold (negative for left)
                 toggle_flash_left();
                 toggle_rearturn_left_char();
                 turn_light_state = LEFT;
-            } else if (polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                 // If current polar_acceleration pass threshold (negative for left)
                 toggle_flash_right();
                 toggle_rearturn_right_char();
@@ -755,10 +757,10 @@ int main(void)
         }
 
         case LEFT: {
-            if (polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
                 // Do nothing
                 turn_light_state = LEFT;
-            } else if (polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                 // If current polar_acceleration pass threshold (negative for left)
                 // First toggle left
                 toggle_flash_left();
@@ -776,7 +778,7 @@ int main(void)
         }
 
         case RIGHT: {
-            if (polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
                 // If current polar_acceleration pass threshold (negative for left)
                 // First  toggle right
                 toggle_flash_right();
@@ -785,7 +787,7 @@ int main(void)
                 toggle_flash_left();
                 toggle_rearturn_left_char();
                 turn_light_state = LEFT;
-            } else if (polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                 // Do nothing
                 turn_light_state = RIGHT;
             } else {

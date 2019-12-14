@@ -73,6 +73,9 @@
 #include "nrf_twi_mngr.h"
 
 #include "types.h"
+#include "buttons.h"
+#include "trip.h"
+#include "virtual_timer.h"
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
 #define CONNECTED_LED                   BSP_BOARD_LED_0                        /**< Is on when device has connected. */
@@ -514,6 +517,23 @@ static void ble_stack_init(void)
 }
 
 
+
+/**@brief Function for initializing the BLE stack.
+ *
+ * @details Handles the write event of a BLE characteristic
+ */
+static void ble_evt_write(ble_evt_t const* p_ble_evt) {
+    if (simple_ble_is_char_event(p_ble_evt, &rearblind_left)) {
+        display_toggle_blind_left();
+    }
+    if (simple_ble_is_char_event(p_ble_evt, &rearblind_right)) {
+        display_toggle_blind_right();
+    }  
+
+    // Will need to update for the navigation system
+}
+
+
 /**@brief Function for handling events from the button handler module.
  *
  * @param[in] pin_no        The pin that the event applies to.
@@ -647,15 +667,11 @@ static void idle_state_handle(void)
     }
 }
 
-// configure initial States
-head_light_state_t head_light_state = OFF;
+// Configuring initial states
+general_state_t trip_state = OFF;
+general_state_t head_light_state = OFF;
+general_state_t nav_state = OFF;
 turn_light_state_t turn_light_state = OFF;
-navigation_state_t nav_state = OFF;
-
-// configure initial state
-head_light_state_t head_light_state = OFF;
-turn_light_state_t turn_light_state = OFF;
-navigation_state_t nav_state = OFF;
 
 // global variables
 struct navigation_update_t nav_update;
@@ -666,6 +682,14 @@ char loc[64];
 bool start_nav = false;
 bool stop_nav = false;
 bool update_nav = false;
+
+// booleans for buttons
+bool switch_state_left = false;
+bool switch_state_right = false;
+bool ride_button_state = false;
+
+// Variables for lux value
+uint32_t tsl2561_lux;
 
 /**@brief Function for application main entry.
  */
@@ -678,6 +702,7 @@ int main(void)
     buttons_init();
     init_lights_front();
     init_lights_back();
+    virtual_timer_init();
     power_management_init();
     ble_stack_init();
     gap_params_init();
@@ -694,151 +719,186 @@ int main(void)
     NRF_LOG_FLUSH();
     twi_scan();
     tsl2561_init(&twi_mngr_instance);
+
     // Enter main loop.
-
-    uint32_t tsl2561_lux = 0;
-    // for (;;)
-    // {
-    //     tsl2561_lux = tsl2561_get_lux();
-    //     idle_state_handle();
-    //     nrf_delay_ms(1000);
-    //     NRF_LOG_INFO("%d \n", tsl2561_lux);
-    //     NRF_LOG_FLUSH();
-    // }
-
     for (;;) {
-    // FSM for headlight
-    tsl2561_lux = tsl2561_get_lux();
-    switch (head_light_state) {
-        case OFF: {
-            // If LUX is below threshold
-            if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
-                // TURN LIGHT ON
-                toggle_headlight();
-                toggle_taillight_char();
-                head_light_state = ON;
-            } else {
-                head_light_state = OFF;
+        // Display updates
+        // TODO: Replace fn with real one
+        display_update_speed();
+
+        // FSM for Trip Details
+        ride_button_state = get_start_ride_button_state();
+        switch (trip_state) {
+            case OFF: {
+                if (ride_button_state) {
+                    // Initalize trip variables
+                    start_time_rec();
+                    start_dist_rec();
+                    start_elev_rec();
+                    trip_state = ON;
+                }
+            }
+
+            case ON: {
+                if (!ride_button_state) {
+                    // Stop trip
+                    stop_time_rec();
+                    stop_dist_rec();
+                    stop_elev_rec();
+                    // TODO: Call function to change displays (format unknown)
+                    // TODO: uint32_t get_time_elapsed(void) 
+                    // TODO: float get_dist_traveled(void)
+                    // TODO: float get_elev_change(void)
+                    trip_state = OFF;
+                }
             }
         }
 
-        case ON: {
-            // If LUX is above threshold
-            if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
-                // TURN LIGHT OFF
-                toggle_headlight();
-                toggle_taillight_char();
-                head_light_state = OFF;
-            } else {
-                head_light_state = ON;
+        // FSM for headlight
+        tsl2561_lux = tsl2561_get_lux();
+        switch (head_light_state) {
+            case OFF: {
+                // If LUX is below threshold
+                if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
+                    // TURN LIGHT ON
+                    toggle_headlight();
+                    toggle_taillight_char();
+                    head_light_state = ON;
+                } else {
+                    head_light_state = OFF;
+                }
             }
-        }
-    }
 
-    // FSM for turnlights.
-    polar_accel = bno055_get_polar_acceleration();
-    // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
-    switch_state = turn_switch_get_state();
-    switch (turn_light_state) {
-        case OFF: {
-            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-                // If current polar_acceleration pass threshold (negative for left)
-                toggle_flash_left();
-                toggle_rearturn_left_char();
-                turn_light_state = LEFT;
-            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-                // If current polar_acceleration pass threshold (negative for left)
-                toggle_flash_right();
-                toggle_rearturn_right_char();
-                turn_light_state = RIGHT;
-            } else {
-                turn_light_state = OFF;
+            case ON: {
+                // If LUX is above threshold
+                if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
+                    // TURN LIGHT OFF
+                    toggle_headlight();
+                    toggle_taillight_char();
+                    head_light_state = OFF;
+                } else {
+                    head_light_state = ON;
+                }
             }
         }
 
-        case LEFT: {
-            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-                // Do nothing
-                turn_light_state = LEFT;
-            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-                // If current polar_acceleration pass threshold (negative for left)
-                // First toggle left
-                toggle_flash_left();
-                toggle_rearturn_left_char();
-                // Then toggle right
-                toggle_flash_right();
-                toggle_rearturn_right_char();
-                turn_light_state = RIGHT;
-            } else {
-                // If no longer turning, toggle lights off
-                toggle_flash_left();
-                toggle_rearturn_left_char();
-                turn_light_state = OFF;
+        // FSM for turnlights.
+        // TODO: Replace fn with real one
+        polar_accel = bno055_get_polar_acceleration();
+        // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
+        switch_state_left = get_left_turn_button_state();
+        switch_state_right = get_right_turn_button_state();
+        switch (turn_light_state) {
+            case TURN_OFF: {
+                if (!switch_state_right&& (switch_state_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                    // If current polar_acceleration pass threshold (negative for left)
+                    toggle_flash_left();
+                    toggle_rearturn_left_char();
+                    // TODO: Toggle display left turn
+                    turn_light_state = TURN_LEFT;
+                } else if (switch_state_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+                    // If current polar_acceleration pass threshold (negative for left)
+                    toggle_flash_right();
+                    toggle_rearturn_right_char();
+                    // TODO: Toggle display right turn
+                    turn_light_state = TURN_RIGHT;
+                } else {
+                    turn_light_state = OFF;
+                }
+            }
+
+            case TURN_LEFT: {
+                if (!switch_state_right && (switch_state_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                    // Do nothing
+                    turn_light_state = TURN_LEFT;
+                } else if (switch_state_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+                    // If current polar_acceleration pass threshold (negative for left)
+                    // First toggle left
+                    toggle_flash_left();
+                    toggle_rearturn_left_char();
+                    // TODO: Toggle display left turn
+
+                    // Then toggle right
+                    toggle_flash_right();
+                    toggle_rearturn_right_char();
+                    // TODO: Toggle display right turn
+                    turn_light_state = TURN_RIGHT;
+                } else {
+                    // If no longer turning, toggle lights off
+                    toggle_flash_left();
+                    toggle_rearturn_left_char();
+                    // TODO: Toggle display left turn
+                    turn_light_state = OFF;
+                }
+            }
+
+            case TURN_RIGHT: {
+                if (!switch_state_right && (switch_state_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                    // If current polar_acceleration pass threshold (negative for left)
+                    // First  toggle right
+                    toggle_flash_right();
+                    toggle_rearturn_right_char();
+                    // TODO: Toggle display right turn
+
+                    // Then toggle left
+                    toggle_flash_left();
+                    toggle_rearturn_left_char();
+                    // TODO: Toggle display left turn
+                    turn_light_state = TURN_LEFT;
+                } else if (switch_state_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
+                    // Do nothing
+                    turn_light_state = TURN_RIGHT;
+                } else {
+                    // If no longer turning, toggle lights off
+                    toggle_flash_right();
+                    toggle_rearturn_right_char();
+                    // TODO: Toggle display right turn
+                    turn_light_state = OFF;
+                }
             }
         }
 
-        case RIGHT: {
-            if (switch_state != 1 && (switch_state == - 1 || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-                // If current polar_acceleration pass threshold (negative for left)
-                // First  toggle right
-                toggle_flash_right();
-                toggle_rearturn_right_char();
-                // Then toggle left
-                toggle_flash_left();
-                toggle_rearturn_left_char();
-                turn_light_state = LEFT;
-            } else if (switch_state == 1 || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-                // Do nothing
-                turn_light_state = RIGHT;
-            } else {
-                // If no longer turning, toggle lights off
-                toggle_flash_right();
-                toggle_rearturn_right_char();
-                turn_light_state = OFF;
+        // TODO: FSM for nav system
+        switch (nav_state) {
+            case OFF: {
+                // If we recieve a BLE notification from the phone to start navigation
+                dst = 0.0;
+                loc = "";
+                if (start_nav) {
+                    // Start navigating
+                    nav_state = ON;
+                    start_nav = false;
+                } else {
+                    // Remain with no navigataion
+                    head_light_state = OFF;
+                }
             }
-        }
-    }
 
-    // FSM for nav system
-    switch (nav_state) {
-        case OFF: {
-            // If we recieve a BLE notification from the phone to start navigation
-            dst = 0.0;
-            loc = "";
-            if (start_nav) {
-                // Start navigating
-                nav_state = ON;
-                start_nav = false;
-            } else {
-                // Remain with no navigataion
-                head_light_state = OFF;
-            }
-        }
+            case ON: {
+                // If we recieve arrived notification from the phone, stop navigation
+                if (stop_nav) {
+                    // Turn off navigation
+                    nav_state = OFF;
+                    stop_nav = false;
+                } 
+                if (update_nav) {
+                    // Keep navigation on
+                    nav_state = ON;
+                    update_nav = false;
 
-        case ON: {
-            // If we recieve arrived notification from the phone, stop navigation
-            if (stop_nav) {
-                // Turn off navigation
-                nav_state = OFF;
-                stop_nav = false;
-            } 
-            if (update_nav) {
-                // Keep navigation on
-                nav_state = ON;
-                update_nav = false;
+                    // parse update
+                    dst = nav_update.dst;
+                    loc = nav_update.loc;
 
-                // parse update
-                dst = nav_update.dst;
-                loc = nav_update.loc;
+                    // update display to show new turn location, new distance
+                } else {
+                    // Keep navigation on
+                    nav_state = ON;
 
-                // update display to show new turn location, new distance
-            } else {
-                // Keep navigation on
-                nav_state = ON;
-
-                // Update distance 
-                dst = update_distance(); // TODO: define function
-                // Refresh display
+                    // Update distance 
+                    dst = update_distance(); // TODO: define function
+                    // Refresh display
+                }
             }
         }
     }

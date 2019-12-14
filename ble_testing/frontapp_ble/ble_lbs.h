@@ -99,13 +99,13 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 // Forward declaration of the ble_lbs_t type.
 typedef struct ble_lbs_s ble_lbs_t;
 
-typedef void (*ble_lbs_led_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state);
+typedef void (*ble_lbs_front_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
 
 /** @brief LED Button Service init structure. This structure contains all options and data needed for
  *        initialization of the service.*/
 typedef struct
 {
-    ble_lbs_led_write_handler_t led_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_front_write_handler_t front_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
 } ble_lbs_init_t;
 
 /**@brief LED Button Service structure. This structure contains various status information for the service. */
@@ -115,7 +115,7 @@ struct ble_lbs_s
     ble_gatts_char_handles_t    led_char_handles;    /**< Handles related to the LED Characteristic. */
     ble_gatts_char_handles_t    button_char_handles; /**< Handles related to the Button Characteristic. */
     uint8_t                     uuid_type;           /**< UUID type for the LED Button Service. */
-    ble_lbs_led_write_handler_t led_write_handler;   /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_front_write_handler_t front_write_handler;   /**< Event handler to be called when the LED Characteristic is written. */
 };
 
 

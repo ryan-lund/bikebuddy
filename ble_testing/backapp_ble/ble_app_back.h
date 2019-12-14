@@ -232,56 +232,6 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-
-/**@brief Function for handling write events to the LED characteristic.
- *
- * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
- * @param[in] led_state Written/desired state of the LED.
- */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
-{
-    if (led_state[0] == 1)
-    {
-
-        NRF_LOG_INFO("Received LED ON! BRAKE");
-    }
-    else if (led_state[0]== 2)
-    {
-        NRF_LOG_INFO("Received LED OFF! LEFT");
-    }
-    else if (led_state[0]== 3)
-    {
-        NRF_LOG_INFO("Received LED OFF! RIGHT");
-    }
-    else 
-    {
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
-    }
-}
-
-
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    ret_code_t         err_code;
-    ble_lbs_init_t     init     = {0};
-    nrf_ble_qwr_init_t qwr_init = {0};
-
-    // Initialize Queued Write Module.
-    qwr_init.error_handler = nrf_qwr_error_handler;
-
-    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
-
-    // Initialize LBS.
-    init.led_write_handler = led_write_handler;
-
-    err_code = ble_lbs_init(&m_lbs, &init);
-    APP_ERROR_CHECK(err_code);
-}
-
-
 /**@brief Function for handling the Connection Parameters Module.
  *
  * @details This function will be called for all events in the Connection Parameters Module that
@@ -523,6 +473,7 @@ static void power_management_init(void)
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
 }
+
 
 
 /**@brief Function for handling the idle state (main loop).

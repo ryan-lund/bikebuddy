@@ -5,42 +5,50 @@
 # All distances are in meters
 # A time_window object is a pair of timestamps in the form [start, end]
 import requests
+import argparse
 from urllib.parse import urlencode
 
 headers = {
     'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
 }
-address_start = '2424 Haste Street'
-locality_start = 'Berkeley'
-params_start = {
-    'address': address_start,
-    'locality': locality_start,
+
+parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
+parser.add_argument('start', metavar='A', type=str, help='Address of the form Street-City-State')
+parser.add_argument('end', metavar='A', type=str, help='Address of the form Street-City-State')
+args = parser.parse_args()
+
+start_address, start_locality, start_region = args.start.split('-')
+end_address, end_locality, end_region = args.end.split('-')
+
+start_params = {
+    'address': start_address,
+    'locality': start_locality,
+    'region': start_region,
 }
-call = requests.get('https://api.openrouteservice.org/geocode/search/structured?api_key=5b3ce3597851110001cf6248cbd8b98cf94b49998c93ca0605780f15&{0}'.format(urlencode(params_start)), headers=headers)
+call = requests.get('https://api.openrouteservice.org/geocode/search/structured?api_key=5b3ce3597851110001cf6248cbd8b98cf94b49998c93ca0605780f15&{0}'.format(urlencode(start_params)), headers=headers)
+
+print(call.status_code, call.reason)
+print(call.text)
+
+start_geo_json = call.json()
+
+end_params = {
+    'address': end_address,
+    'locality': end_locality,
+    'region': end_region,
+}
+call = requests.get('https://api.openrouteservice.org/geocode/search/structured?api_key=5b3ce3597851110001cf6248cbd8b98cf94b49998c93ca0605780f15&{0}'.format(urlencode(end_params)), headers=headers)
 
 # print(call.status_code, call.reason)
 # print(call.text)
 
-geo1 = call.json()
+end_geo_json = call.json()
 
-address_end = '4617 Korbel Street'
-locality_end = 'Union City'
-params_end = {
-    'address': address_end,
-    'locality': locality_end,
-}
-call = requests.get('https://api.openrouteservice.org/geocode/search/structured?api_key=5b3ce3597851110001cf6248cbd8b98cf94b49998c93ca0605780f15&{0}'.format(urlencode(params_end)), headers=headers)
+start_geo = start_geo_json['features'][0]['geometry']['coordinates']
+end_geo = end_geo_json['features'][0]['geometry']['coordinates']
 
-# print(call.status_code, call.reason)
-# print(call.text)
-
-geo2 = call.json()
-
-start = geo1['features'][0]['geometry']['coordinates']
-end = geo2['features'][0]['geometry']['coordinates']
-
-start_coords = ','.join([str(start[0]),str(start[1])])
-end_coords = ','.join([str(end[0]),str(end[1])])
+start_coords = ','.join([str(start_geo[0]),str(start_geo[1])])
+end_coords = ','.join([str(end_geo[0]),str(end_geo[1])])
 
 params_directions = {
     'start': start_coords,
@@ -54,4 +62,4 @@ call = requests.get('https://api.openrouteservice.org/v2/directions/driving-car?
 directions = call.json()
 
 for step in directions['features'][0]['properties']['segments'][0]['steps']:
-    print("{0} m".format(step['distance']),step['instruction'])
+    print("{0}m".format(step['distance']),step['instruction'])

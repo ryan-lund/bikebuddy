@@ -54,11 +54,11 @@
 static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
 {
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
-    NRF_LOG_INFO("%d", p_evt_write->len);
+    NRF_LOG_INFO("length %d", p_evt_write->len);
     if (   (p_evt_write->handle == p_lbs->led_char_handles.value_handle)
-        && (p_lbs->led_write_handler != NULL))
+        && (p_lbs->front_write_handler != NULL))
     {
-        p_lbs->led_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data));
+        p_lbs->front_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
 }
 
@@ -87,7 +87,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     ble_add_char_params_t add_char_params;
 
     // Initialize service structure.
-    p_lbs->led_write_handler = p_lbs_init->led_write_handler;
+    p_lbs->front_write_handler = p_lbs_init->front_write_handler;
 
     // Add service.
     ble_uuid128_t base_uuid = {LBS_UUID_BASE};
@@ -124,8 +124,8 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_LED_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
-    add_char_params.init_len         = 32*sizeof(uint8_t*);
-    add_char_params.max_len          = 32*sizeof(uint8_t*);
+    add_char_params.init_len         = 64*sizeof(uint8_t*);
+    add_char_params.max_len          = 64*sizeof(uint8_t*);
     add_char_params.char_props.read  = 1;
     add_char_params.char_props.write = 1;
 

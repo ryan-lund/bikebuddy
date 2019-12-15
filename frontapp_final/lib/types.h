@@ -4,7 +4,7 @@ typedef enum {
 } general_state_t;
 
 typedef enum {
-  OFF,
+  TURN_OFF,
   TURN_LEFT,
   TURN_RIGHT,
 } turn_light_state_t;

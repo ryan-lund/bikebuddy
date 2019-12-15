@@ -7,7 +7,7 @@
 #include "virtual_timer.h"
 
 uint32_t time_timer_id = 0;
-uint32_t dist_timer_id = 0;
+uint32_t trip_dist_timer_id = 0;
 
 uint32_t time_elapsed = 0;
 float distance_traveled = 0.0f;
@@ -20,7 +20,8 @@ void update_time (void) {
 }
 
 void calculate_dist(void) {
-    float speed = // READ SPEED
+    float speed = 0; // READ SPEED
+    // TODO 
     distance_traveled += speed;
 }
 
@@ -31,7 +32,7 @@ void start_time_rec(void) {
 
 void start_dist_rec(void) {
     distance_traveled = 0.0f;
-    dist_timer_id = virtual_timer_start_repeated(UPDATE_INTERVAL, calculate_dist);
+    trip_dist_timer_id = virtual_timer_start_repeated(UPDATE_INTERVAL, calculate_dist);
 }
 
 void start_elev_rec(void) {
@@ -43,7 +44,7 @@ void stop_time_rec(void) {
 }
 
 void stop_dist_rec(void) {
-    virtual_timer_cancel(dist_timer_id);
+    virtual_timer_cancel(trip_dist_timer_id);
 }
 
 void stop_elev_rec(void) {

@@ -7,7 +7,7 @@
 #define START_RIDE_PIN_PIN 29
 #endif
 
-void init_lights(void);
+void init_buttons(void);
 
 // Note: True = on, False = off
 bool get_left_turn_button_state(void);

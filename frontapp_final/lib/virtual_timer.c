@@ -10,57 +10,54 @@
 #include "virtual_timer.h"
 #include "virtual_timer_linked_list.h"
 
-// This is the interrupt handler that fires on a compare event
-void TIMER4_IRQHandler(void) {
-  // This should always be the first line of the interrupt handler!
-  // It clears the event so that it doesn't happen again
-  NRF_TIMER4->EVENTS_COMPARE[2] = 0;
 
-  // Place your interrupt handler code here
-  node_t* node = list_remove_first();
-  if (node != NULL) {
-    // Call the callback function
-    node->cb();
-    // If the node is repeated, update the value and re-insert
-    if (node->repeated) {
-      node->timer_value += node->period;
-      list_insert_sorted(node);
-    }
-    // Update the capture/compare register to the first node
-    node_t* first_node = list_get_first();
-    if (first_node != NULL) {
-      // Make sure that the comparison and the CC register write don't have an interrupt between them
-      __disable_irq();
-      // If the next node has already passed, call its callback
-      while (first_node->timer_value < read_timer()){
-        // Call the callback
-        first_node->cb();
-        // Remove the node from the list
-        list_remove(first_node);
-        // If the node is repeated, update the value and re-insert
-        if (first_node->repeated) {
-          first_node->timer_value += first_node->period;
-          list_insert_sorted(first_node);
-        } else {
-          free(first_node);
-        }
-        // Peek at the next node
-        first_node = list_get_first();
-      }
-      NRF_TIMER4->CC[2] = first_node->timer_value;
-      __enable_irq();
-    }
-    // Free the node if it is not repeated
-    if (!node->repeated) {
-      free(node);
+static void handle_timers()
+{
+  node_t *first = list_get_first();
+  bool found = false;
+  while (first != NULL && !found) {
+    if (read_timer() > first->timer_value) {
+      first->cb();
+      list_remove_first();
+      free(first);
+      first = list_get_first();
+    } else {
+      NRF_TIMER4->CC[0] = first->timer_value;
+      found = true;
     }
   }
 }
 
+// This is the interrupt handler that fires on a compare event
+void TIMER4_IRQHandler(void) {
+  // This should always be the first line of the interrupt handler!
+  // It clears the event so that it doesn't happen again
+  NRF_TIMER4->EVENTS_COMPARE[0] = 0;
+
+  // Place your interrupt handler code here
+  // printf("Timer Fired!\n");
+  node_t *currTimer = list_remove_first();
+  currTimer->cb();
+  if (currTimer->isRepeated)
+  {
+    currTimer->timer_value += currTimer->repeatTime;
+    list_insert_sorted(currTimer);
+  }
+  else
+  {
+    free(currTimer);
+  }
+  __disable_irq();
+  handle_timers();
+  __enable_irq();
+}
+
 // Read the current value of the timer counter
 uint32_t read_timer(void) {
-  NRF_TIMER4->TASKS_CAPTURE[1] = 0x01;
+
   // Should return the value of the internal counter for TIMER4
+  NRF_TIMER4->TASKS_CAPTURE[1] = 1;
+
   return NRF_TIMER4->CC[1];
 }
 
@@ -72,16 +69,14 @@ uint32_t read_timer(void) {
 // 5) Start the timer
 void virtual_timer_init(void) {
   // Place your timer initialization code here
-  NRF_TIMER4->BITMODE = 0x03;
-  NRF_TIMER4->PRESCALER = 0x04;
-  // Enable two CC registers for TIMER4
-  NRF_TIMER4->INTENSET = 0x01 << 17;
-  NRF_TIMER4->INTENSET |= 0x01 << 18;
-  // Enable the TIMER4 interrupt in the NVIC
-  NVIC_EnableIRQ(TIMER4_IRQn);
+  NRF_TIMER4->BITMODE = 3;
+  NRF_TIMER4->PRESCALER = 4;
+  NRF_TIMER4->TASKS_CLEAR = 1;
+  NRF_TIMER4->TASKS_START = 1;
 
-  NRF_TIMER4->TASKS_CLEAR = 0x01;
-  NRF_TIMER4->TASKS_START = 0x01;
+  NRF_TIMER4->INTENSET |= 1 << 16;
+  NVIC_EnableIRQ(TIMER4_IRQn);
+  NVIC_SetPriority(TIMER4_IRQn, 1);
 }
 
 // Start a timer. This function is called for both one-shot and repeated timers
@@ -99,44 +94,25 @@ void virtual_timer_init(void) {
 //
 // Follow the lab manual and start with simple cases first, building complexity and
 // testing it over time.
-static uint32_t timer_start(uint32_t microseconds, virtual_timer_callback_t cb, bool repeated) {
-  // Create a linked list node with input parameters
-  node_t* node = malloc(sizeof(node_t));
-  node->timer_value = read_timer() + microseconds;
-  node->cb = cb;
-  node->repeated = repeated;
-  if (repeated) {
-    node->period = microseconds;
-  }
-  // Insert the node to the timer linked list
-  list_insert_sorted(node);
-  // Update the capture/compare register to the first node
-  node_t* first_node = list_get_first();
-  if (first_node != NULL) {
-    // Make sure that the comparison and the CC register write don't have an interrupt between them
-    __disable_irq();
-    // If the next node has already passed, call its callback
-    while (first_node->timer_value < read_timer()){
-      // Call the callback
-      first_node->cb();
-      // Remove the node from the list
-      list_remove(first_node);
-      // If the node is repeated, update the value and re-insert
-      if (first_node->repeated) {
-        first_node->timer_value += first_node->period;
-        list_insert_sorted(first_node);
-      } else {
-        free(first_node);
-      }
-      // Peek at the next node
-      first_node = list_get_first();
-    }
-    NRF_TIMER4->CC[2] = first_node->timer_value;
-    __enable_irq();
-  }  
-  NRF_TIMER4->EVENTS_COMPARE[2] = 0x01;
+static uint32_t timer_start(uint32_t microseconds, virtual_timer_callback_t cb, bool repeated) {  
+  __disable_irq();
+  uint32_t newTime = read_timer() + microseconds;
+
+  // create new node
+  node_t *newNode = malloc(sizeof(node_t));
+  newNode->timer_value = newTime;
+  newNode->cb = cb;
+  newNode->isRepeated = repeated;
+  newNode->repeatTime = microseconds;
+  list_insert_sorted(newNode);
+
+  // check if expired
+  handle_timers();
+
+  __enable_irq();
+
   // Return a unique timer ID. (hint: What is guaranteed unique about the timer you have created?)
-  return node;
+  return (uint32_t) newNode;
 }
 
 // You do not need to modify this function
@@ -155,31 +131,39 @@ uint32_t virtual_timer_start_repeated(uint32_t microseconds, virtual_timer_callb
 // Make sure you don't cause linked list consistency issues!
 // Do not forget to free removed timers.
 void virtual_timer_cancel(uint32_t timer_id) {
-  list_remove((node_t*) timer_id);
-  free((node_t*) timer_id);
-  // Update the capture/compare register to the first node
-  node_t* first_node = list_get_first();
-  if (first_node != NULL) {
-    // Make sure that the comparison and the CC register write don't have an interrupt between them
-    __disable_irq();
-    // If the next node has already passed, call its callback
-    while (first_node->timer_value < read_timer()){
-      // Call the callback
-      first_node->cb();
-      // Remove the node from the list
-      list_remove(first_node);
-      // If the node is repeated, update the value and re-insert
-      if (first_node->repeated) {
-        first_node->timer_value += first_node->period;
-        list_insert_sorted(first_node);
-      } else {
-        free(first_node);
-      }
-      // Peek at the next node
-      first_node = list_get_first();
-    }
-    NRF_TIMER4->CC[2] = first_node->timer_value;
-    __enable_irq();
-  }
+  __disable_irq();
+  node_t *currNode = (node_t*) timer_id;
+
+  // while(currNode != NULL) {
+  //   if (currNode->timerID == timer_id) {
+  //     if (NRF_TIMER4->CC[0] == currNode->timer_value) {
+  //       if(currNode->next != NULL) {
+  //         NRF_TIMER4->CC[0] = currNode->next->timer_value;
+  //       } else {
+  //         NRF_TIMER4->CC[0] = 0;
+  //       }
+  //     }
+  //     list_remove(currNode);
+  //     free(currNode);
+  //     return;
+  //   }
+  //   currNode = currNode->next;
+//   }
+
+  // if (NRF_TIMER4->CC[0] == currNode->timer_value) {
+  //   if(currNode->next != NULL) {
+  //     NRF_TIMER4->CC[0] = currNode->next->timer_value;
+  //   } else {
+  //     NRF_TIMER4->CC[0] = 0;
+  //   }
+  // }
+  // SET TO ZERO JUST IN CASE QUEUED UP
+  // BELOW CODE WILL REQUEUE IF NECESSARY
+  NRF_TIMER4->CC[0] = 0;
+  list_remove(currNode);
+  free(currNode);
+
+  handle_timers();
+  __enable_irq();
 }
 

@@ -55,6 +55,9 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
 {
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
     NRF_LOG_INFO("length %d", p_evt_write->len);
+    NRF_LOG_HEXDUMP_INFO(&p_evt_write->data, p_evt_write->len);
+    NRF_LOG_INFO("handle %d",p_evt_write->handle)
+    NRF_LOG_INFO("uuid %d",p_evt_write->uuid.uuid)
     if (   (p_evt_write->handle == p_lbs->led_char_handles.value_handle)
         && (p_lbs->front_write_handler != NULL))
     {

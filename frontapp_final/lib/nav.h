@@ -12,6 +12,6 @@ bool get_nav_system_active(void);
 
 void nav_update_display_distance_remaining(void);
 
-void get_distance_remaining(void);
+uint32_t get_distance_remaining(void);
 
 uint32_t get_turn_direction(void);

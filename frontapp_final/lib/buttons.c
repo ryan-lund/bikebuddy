@@ -5,10 +5,10 @@
 #include "nrf_gpio.h"
 #include "buttons.h"
 
-void init_lights(void) {
+void init_buttons(void) {
 	nrf_gpio_pin_dir_set(LEFT_TURN_BUTTON_PIN, NRF_GPIO_PIN_DIR_INPUT);
 	nrf_gpio_pin_dir_set(RIGHT_TURN_BUTTON_PIN, NRF_GPIO_PIN_DIR_INPUT); 
-	nrf_gpio_pin_dir_set(TAIL_PIN, NRF_GPIO_PIN_DIR_INPUT);
+	nrf_gpio_pin_dir_set(START_RIDE_PIN_PIN, NRF_GPIO_PIN_DIR_INPUT);
 }
 
 // Note: True = on, False = off

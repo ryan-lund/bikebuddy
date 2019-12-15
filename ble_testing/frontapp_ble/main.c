@@ -27,27 +27,34 @@
 
 
 char direction[64];
-static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state, uint16_t len)
+float distance;
+static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    memcpy(direction, led_state, sizeof(direction));
-    NRF_LOG_INFO("%s", direction);
-    if (led_state[0] == 1)
+    // distance = 11.32;
+    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    // memcpy(&distance, data, sizeof(distance));
+    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    // memcpy(direction, data, sizeof(direction));
+    // NRF_LOG_INFO("%s", direction);
+    if (data[0] == 1)
     {
         ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
         NRF_LOG_INFO("Received LED ON! BRAKE");
     }
-    else if (led_state[0]== 2)
+    else if (data[0]== 2)
     {
         NRF_LOG_INFO("Received LED OFF! LEFT");
     }
-    else if (led_state[0]== 3)
+    else if (data[0]== 3)
     {
         NRF_LOG_INFO("Received LED OFF! RIGHT");
     }
     else 
     {
         ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
+        NRF_LOG_HEXDUMP_INFO(data, 32);
     }
 }
 
@@ -101,12 +108,6 @@ int main(void)
     for (;;)
     {
         idle_state_handle();
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 1")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 0")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
     }
 }
 

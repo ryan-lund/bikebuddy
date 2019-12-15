@@ -34,9 +34,12 @@
 #include "virtual_timer.h"
 #include "lights.h"
 
+// TODO: FIX ME
 #define HEADLIGHT_THRESHOLD  100
 #define TURNLIGHT_POLAR_TURN_THRESHOLD  1234 // Righ is pos, left is neg
 #define BRAKELIGHT_DECEL_THRESHOLD  1234
+
+#define BOARD_SPARKFUN_NRF52840_MINI    1
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -107,8 +110,8 @@ void twi_init(void) {
   //NRF_LOG_INFO("STARTING TWI INIT");
 
   const nrf_drv_twi_config_t twi_config = {
-    .scl                = ARDUINO_SCL_PIN,
-    .sda                = ARDUINO_SDA_PIN,
+    .scl                = 4,
+    .sda                = 5,
     .frequency          = NRF_TWI_FREQ_400K,
   };
 
@@ -181,6 +184,7 @@ int main(void)
     // Initialize.
     log_init();
     leds_init();
+    lights_init();
     timers_init();
     // init_lights_front();
     // init_lights_back();
@@ -192,8 +196,8 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    // twi_init(); // IMPORTANT
-    init_buttons(); // IMPORTANT
+    twi_init(); // IMPORTANT
+    buttons_init(); // IMPORTANT
     nrf_delay_ms(3000);
 
     // Start execution.
@@ -211,7 +215,8 @@ int main(void)
         // display_update_speed();
 
         // FSM for Trip Details
-        ride_button_state = get_start_ride_button_state();
+        // ride_button_state = get_start_ride_button_state();
+        ride_button_state = false;
         switch (trip_state) {
             case OFF: {
                 if (ride_button_state) {
@@ -221,6 +226,7 @@ int main(void)
                     start_elev_rec();
                     trip_state = ON;
                 }
+                break;
             }
 
             case ON: {
@@ -235,6 +241,7 @@ int main(void)
                     // TODO: float get_elev_change(void)
                     trip_state = OFF;
                 }
+                break;
             }
         }
 
@@ -251,6 +258,7 @@ int main(void)
                 } else {
                     head_light_state = OFF;
                 }
+                break;
             }
 
             case ON: {
@@ -263,6 +271,7 @@ int main(void)
                 } else {
                     head_light_state = ON;
                 }
+                break;
             }
         }
 
@@ -273,6 +282,8 @@ int main(void)
         // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
         switch_state_left = get_left_turn_button_state();
         switch_state_right = get_right_turn_button_state();
+        // switch_state_right = false;
+        // switch_state_left = false;
         switch (turn_light_state) {
             case TURN_OFF: {
                 if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
@@ -290,6 +301,7 @@ int main(void)
                 } else {
                     turn_light_state = TURN_OFF;
                 }
+                break;
             }
 
             case TURN_LEFT: {
@@ -315,6 +327,7 @@ int main(void)
                     // TODO: Toggle display left turn
                     turn_light_state = TURN_OFF;
                 }
+                break;
             }
 
             case TURN_RIGHT: {
@@ -340,6 +353,7 @@ int main(void)
                     // TODO: Toggle display right turn
                     turn_light_state = TURN_OFF;
                 }
+                break;
             }
         }
 
@@ -350,6 +364,7 @@ int main(void)
                 if (get_nav_system_active()) {
                     nav_state = ON;
                 }
+                break;
             }
 
             case ON: {
@@ -374,6 +389,7 @@ int main(void)
                         nav_turn_right = false;
                     }
                 }
+                break;
             }
         }
     }

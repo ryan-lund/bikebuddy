@@ -1,11 +1,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "nrf.h"
-#include "app_util.h"
 #include "nrf_gpio.h"
 #include "buttons.h"
 
-void init_buttons(void) {
+void buttons_init(void) {
 	nrf_gpio_pin_dir_set(LEFT_TURN_BUTTON_PIN, NRF_GPIO_PIN_DIR_INPUT);
 	nrf_gpio_pin_dir_set(RIGHT_TURN_BUTTON_PIN, NRF_GPIO_PIN_DIR_INPUT); 
 	nrf_gpio_pin_dir_set(START_RIDE_PIN_PIN, NRF_GPIO_PIN_DIR_INPUT);

@@ -11,21 +11,16 @@ int right_timer_id = 0;
 
 void lights_init(void) {
 	// configure pins as outputs
-	// 4: left
-	// 5: right
-	// 29: taillight
-	// 30: brake
+	// 28: Left
+	// 29: Right
+	// 30: Head
 	nrf_gpio_pin_dir_set(LEFT_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 	nrf_gpio_pin_dir_set(RIGHT_PIN, NRF_GPIO_PIN_DIR_OUTPUT); 
-	nrf_gpio_pin_dir_set(TAIL_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
-	nrf_gpio_pin_dir_set(BRAKE_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
 
 	// insure that all pins are set to low
 	nrf_gpio_pin_clear(LEFT_PIN);
 	nrf_gpio_pin_clear(RIGHT_PIN); 
-	nrf_gpio_pin_clear(TAIL_PIN);
-	nrf_gpio_pin_clear(BRAKE_PIN);
 	nrf_gpio_pin_clear(HEAD_PIN);
 }
 
@@ -55,14 +50,6 @@ void toggle_flash_right(void) {
 		nrf_gpio_pin_clear(RIGHT_PIN);
 		right_timer_id = 0;
 	}
-}
-
-void toggle_taillight(void) {
-	nrf_gpio_pin_toggle(TAIL_PIN);
-}
-
-void toggle_brakelight(void) {
-	nrf_gpio_pin_toggle(BRAKE_PIN);
 }
 
 void toggle_headlight(void) {

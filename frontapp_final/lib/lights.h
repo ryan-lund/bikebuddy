@@ -3,11 +3,9 @@
 
 #ifndef LIGHTS_VARS
 #define LIGHTS_VARS
-#define LEFT_PIN 30
-#define RIGHT_PIN 28
-#define TAIL_PIN 29
-#define HEAD_PIN 5 // TODO
-#define BRAKE_PIN 4
+#define LEFT_PIN 28
+#define RIGHT_PIN 29
+#define HEAD_PIN 30
 #define FLASH_INTERVAL 500000
 #endif
 

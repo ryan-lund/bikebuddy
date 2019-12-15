@@ -35,7 +35,7 @@ void start_dist_rec(void) {
 }
 
 void start_elev_rec(void) {
-    start_elev = // READ FROM ALT SENSOR
+    start_elev = 0;// READ FROM ALT SENSOR
 }
 
 void stop_time_rec(void) {
@@ -47,7 +47,7 @@ void stop_dist_rec(void) {
 }
 
 void stop_elev_rec(void) {
-    stop_elev = // READ FROM ALT SENSOR
+    stop_elev = 5;// READ FROM ALT SENSOR
 }
 
 uint32_t get_time_elapsed(void) {

@@ -280,8 +280,8 @@ int main(void)
         // polar_accel = bno055_get_polar_acceleration();
         uint32_t polar_accel = 0;
         // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
-        switch_state_left = get_left_turn_button_state();
-        switch_state_right = get_right_turn_button_state();
+        switch_state_left = nrf_gpio_pin_read(9);
+        switch_state_right = nrf_gpio_pin_read(10);
         // switch_state_right = false;
         // switch_state_left = false;
         switch (turn_light_state) {

@@ -1,3 +1,14 @@
 #pragma once
 
+#define LIGHTS_VARS
+#define LEFT_PIN 28
+#define RIGHT_PIN 29
+#define HEAD_PIN 30
+#define FLASH_INTERVAL 500000
+
+#define BUTTONS_VARS
+#define LEFT_TURN_BUTTON_PIN 9
+#define RIGHT_TURN_BUTTON_PIN 10
+#define START_RIDE_PIN_PIN 23
+
 #define UPDATE_INTERVAL 1000000

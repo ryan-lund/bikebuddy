@@ -236,6 +236,7 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
+CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)
@@ -253,6 +254,7 @@ ASMFLAGS += -DNRF52840_XXAA
 ASMFLAGS += -DNRF_SD_BLE_API_VERSION=7
 ASMFLAGS += -DS140
 ASMFLAGS += -DSOFTDEVICE_PRESENT
+ASMFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
 # Linker flags
 LDFLAGS += $(OPT)

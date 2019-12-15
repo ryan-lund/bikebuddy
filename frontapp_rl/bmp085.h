@@ -16,7 +16,7 @@
 #define BMP085_CONTROL_REGISTER 0xF4
 #define BMP085_TEMPERATURE 0x2E
 #define BMP085_PRESSURE 0xF4
-#define BMP_OSS 3
+#define BMP085_OSS 3
 
 //public
 void bmp085_init(const nrf_twi_mngr_t* instance);

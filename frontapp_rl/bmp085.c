@@ -17,7 +17,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-#include "bmp_085.h"
+#include "bmp085.h"
 
 
 //globals (mostly calibration stuff)
@@ -60,24 +60,29 @@ struct BMP_READINGS {
   * @param  bmp_control_reg The register to request data from
   * @retval Short containing data
   */
-uint16_t bmp085ReadShort(uint8_t bmp_control_reg)
+short bmp085ReadShort(uint8_t bmp_control_reg)
 {	
-	uint8_t data[2]; 	
+	uint8_t data[2]; 
+
+	NRF_LOG_INFO("Requesting reg: 0x%x", bmp_control_reg);	
 	//contact the bmp
 	nrf_twi_mngr_transfer_t const read_short_transfer[] = {
     	NRF_TWI_MNGR_WRITE(BMP085_ADDRESS, bmp_control_reg, 1, NRF_TWI_MNGR_NO_STOP),
     	NRF_TWI_MNGR_READ(BMP085_ADDRESS, (uint8_t*) data, 2, 0),
   	};
 
-  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, read_short_ransfer, sizeof(read_short_transfer)/sizeof(read_short_transfer[0]), NULL);
+  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, read_short_transfer, sizeof(read_short_transfer)/sizeof(read_short_transfer[0]), NULL);
   	APP_ERROR_CHECK(error);
 	
+	NRF_LOG_INFO("Number of transactions is: %d", sizeof(read_short_transfer)/sizeof(read_short_transfer[0]));
+	NRF_LOG_INFO("Reading short: 0x%x 0x%x", data[0], data[1]); 
+	NRF_LOG_FLUSH();
 	//construct short
 	uint8_t msb, lsb; 
 	msb = data[0]; //read first byte
 	lsb = data[1]; //read second byte
 	
-	return (uint16_t) msb<<8 | lsb; //combine both bytes as short
+	return (short) msb<<8 | lsb; //combine both bytes as short
 }
 
 /**
@@ -87,7 +92,9 @@ uint16_t bmp085ReadShort(uint8_t bmp_control_reg)
   * @retval None
   */
 void bmp085_requestUT(){
-	uint8_t reg[2] = {BMP085_CONTROL_REGISTER, BMP085_TEMPERATURE};
+ NRF_LOG_INFO("Requesting UT");
+ uint8_t reg[2] = {BMP085_CONTROL_REGISTER, BMP085_TEMPERATURE};
+ NRF_LOG_INFO("Sending 0x%x 0x%x", reg[0], reg[1]);
 
   nrf_twi_mngr_transfer_t const requestUT_transfer[] = {
     NRF_TWI_MNGR_WRITE(BMP085_ADDRESS, reg, 2, 0),
@@ -95,6 +102,8 @@ void bmp085_requestUT(){
 
   int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, requestUT_transfer, 1, NULL);
   APP_ERROR_CHECK(error);
+  NRF_LOG_INFO("UT Requested");
+  NRF_LOG_FLUSH();
 }
 
 /**
@@ -104,17 +113,17 @@ void bmp085_requestUT(){
   * @retval A uint8_t containing data
   */
 uint8_t bmp085Read(uint8_t bmp_control_reg){
-	uint8_t* data; 	
+	uint8_t data[1]; 	
 	//contact the bmp
 	nrf_twi_mngr_transfer_t const read_byte_transfer[] = {
     	NRF_TWI_MNGR_WRITE(BMP085_ADDRESS, bmp_control_reg, 1, NRF_TWI_MNGR_NO_STOP),
     	NRF_TWI_MNGR_READ(BMP085_ADDRESS, (uint8_t*) data, 1, 0),
   	};
 
-  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, read_tshort_ransfer, sizeof(read_byte_transfer)/sizeof(read_byte_transfer[0]), NULL);
+  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, read_byte_transfer, sizeof(read_byte_transfer)/sizeof(read_byte_transfer[0]), NULL);
   	APP_ERROR_CHECK(error);
 	
-	return *data;
+	return data[0];
 }
 
 /**
@@ -126,6 +135,7 @@ uint8_t bmp085Read(uint8_t bmp_control_reg){
 unsigned short bmp085_readUT(){
 	
 	bmp.ut = bmp085ReadShort(0xF6);
+	NRF_LOG_INFO("BMP UT: %d", bmp.ut);
 	return bmp085ReadShort(0xF6); 
 }	
 
@@ -137,7 +147,7 @@ unsigned short bmp085_readUT(){
   */
 void bmp085_calibration()
 {
-	printf(" calibrating BMP085\n");
+	NRF_LOG_INFO("Calibrating BMP085");
 	ac1 = bmp085ReadShort(0xAA);
 	ac2 = bmp085ReadShort(0xAC);
 	ac3 = bmp085ReadShort(0xAE);
@@ -149,7 +159,7 @@ void bmp085_calibration()
 	//mb = bmp085ReadShort(0xBA);
 	mc = bmp085ReadShort(0xBC);
 	md = bmp085ReadShort(0xBE);
-	printf(" calibration complete.\n");
+	NRF_LOG_INFO("Calibration complete.");
 }
 
 /**
@@ -165,6 +175,7 @@ float bmp085_calcT(unsigned short ut){
 	x2 = ((long)mc << 11)/(x1 + md);
 	b5 = x1 + x2;
 
+	NRF_LOG_INFO("Calc T: %d", ((b5 + 8)>>4)*.1);
 	return ((b5 + 8)>>4)*.1; //in celcius
 }
 	
@@ -209,14 +220,13 @@ uint32_t bmp085_readUP(uint8_t bmp_control_reg, uint8_t OSS)
 	uint8_t num_bytes = 3;
 	uint8_t data[num_bytes];
 
-	uint8_t data[2]; 	
 	//contact the bmp
 	nrf_twi_mngr_transfer_t const readUP_transfer[] = {
     	NRF_TWI_MNGR_WRITE(BMP085_ADDRESS, bmp_control_reg, 1, NRF_TWI_MNGR_NO_STOP),
     	NRF_TWI_MNGR_READ(BMP085_ADDRESS, (uint8_t*) data, num_bytes, 0),
   	};
 
-  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, readUP_ransfer, sizeof(readUP_transfer)/sizeof(readUP_transfer[0]), NULL);
+  	int error = nrf_twi_mngr_perform(twi_mngr_instance, NULL, readUP_transfer, sizeof(readUP_transfer)/sizeof(readUP_transfer[0]), NULL);
   	APP_ERROR_CHECK(error);
 
 	
@@ -292,7 +302,7 @@ float bmp085_calcAlt(void){
   * @retval None
   */
 void bmp085_init(const nrf_twi_mngr_t* instance){
-	twi_mngr_instance = instance
+	twi_mngr_instance = instance;
 	bmp085_calibration();	
 }
 
@@ -304,7 +314,7 @@ void bmp085_init(const nrf_twi_mngr_t* instance){
   */
 float bmp085_getTemperature(void){ 
 	bmp085_requestUT();
-	nrf_delay_ms(6); // 4.5 ms delay required
+	nrf_delay_ms(5); // 4.5 ms delay required
 	bmp085_readUT();
 	bmp.temperature = bmp085_calcT(bmp.ut);
 	return bmp.temperature;
@@ -317,24 +327,24 @@ float bmp085_getTemperature(void){
   * @retval uint32 of pressure reading in Pascals
   */
 uint32_t bmp085_getPressure(void){ 
-	bmp085_requestUP(OSS);
-	switch(OSS) {
+	bmp085_requestUP(BMP085_OSS);
+	switch(BMP085_OSS) {
 		case 0:
-			nrf_delay_ms(6); // 4.5 ms required
+			nrf_delay_ms(5); // 4.5 ms required
 			break;
 		case 1:
-			nrf_delay_ms(9); // 7.5 ms required
+			nrf_delay_ms(8); // 7.5 ms required
 			break;
 		case 2:
-			nrf_delay_ms(15); //13.5 ms required
+			nrf_delay_ms(14); //13.5 ms required
 			break;
 		case 3:
-			nrf_delay_ms(27); //25.5 ms required
+			nrf_delay_ms(16); //25.5 ms required
 			break;
 	}
 	
-	bmp.up = bmp085_readUP(0xF6, OSS);
-	bmp.pressure = bmp085_calcP(bmp.up, OSS);
+	bmp.up = bmp085_readUP(0xF6, BMP085_OSS);
+	bmp.pressure = bmp085_calcP(bmp.up, BMP085_OSS);
 	return bmp.pressure;
 }
 

@@ -522,7 +522,8 @@ static void ble_stack_init(void)
  *
  * @details Handles the write event of a BLE characteristic
  */
-static void ble_evt_write(ble_evt_t const* p_ble_evt) {
+static void ble_evt_write(ble_lbs_t * p_lbs, ble_evt_t const* p_ble_evt) {
+
     if (simple_ble_is_char_event(p_ble_evt, &rearblind_left)) {
         display_toggle_blind_left();
     }
@@ -531,7 +532,7 @@ static void ble_evt_write(ble_evt_t const* p_ble_evt) {
     }  
     if (simple_ble_is_char_event(p_ble_evt, &nav_system_active)) {
         // TODO: IF 1
-        if () {
+        if (true) {
             nav_start();
         } else {
             nav_stop();
@@ -540,7 +541,7 @@ static void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: UPDATE FOR WHOLE STRING
     if (simple_ble_is_char_event(p_ble_evt, &nav_waypoint_update)) {
         // TODO: Update waypoint (format unknown)
-        nav_waypoint_update();
+        // nav_waypoint_update();
     }
 }
 
@@ -730,7 +731,7 @@ int main(void)
         // Display updates
         // TODO: Replace fn with real one
         // In fn make sure that it is in miles/hr
-        display_update_speed();
+        // display_update_speed();
 
         // FSM for Trip Details
         ride_button_state = get_start_ride_button_state();
@@ -768,7 +769,7 @@ int main(void)
                 if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
                     // TURN LIGHT ON
                     toggle_headlight();
-                    toggle_taillight_char();
+                    // TODO: toggle_taillight_char();
                     head_light_state = ON;
                 } else {
                     head_light_state = OFF;
@@ -780,7 +781,7 @@ int main(void)
                 if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
                     // TURN LIGHT OFF
                     toggle_headlight();
-                    toggle_taillight_char();
+                    // TODO: toggle_taillight_char();
                     head_light_state = OFF;
                 } else {
                     head_light_state = ON;
@@ -799,13 +800,13 @@ int main(void)
                 if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
                     // If current polar_acceleration pass threshold (negative for left)
                     toggle_flash_left();
-                    toggle_rearturn_left_char();
+                    // TODO: sendtoggle_rearturn_left_char();
                     // TODO: Toggle display left turn
                     turn_light_state = TURN_LEFT;
                 } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                     // If current polar_acceleration pass threshold (negative for left)
                     toggle_flash_right();
-                    toggle_rearturn_right_char();
+                    // TODO: sendtoggle_rearturn_right_char();
                     // TODO: Toggle display right turn
                     turn_light_state = TURN_RIGHT;
                 } else {
@@ -821,18 +822,18 @@ int main(void)
                     // If current polar_acceleration pass threshold (negative for left)
                     // First toggle left
                     toggle_flash_left();
-                    toggle_rearturn_left_char();
+                    // TODO: sendtoggle_rearturn_left_char();
                     // TODO: Toggle display left turn
 
                     // Then toggle right
                     toggle_flash_right();
-                    toggle_rearturn_right_char();
+                    // TODO: sendtoggle_rearturn_right_char();
                     // TODO: Toggle display right turn
                     turn_light_state = TURN_RIGHT;
                 } else {
                     // If no longer turning, toggle lights off
                     toggle_flash_left();
-                    toggle_rearturn_left_char();
+                    // TODO: sendtoggle_rearturn_left_char();
                     // TODO: Toggle display left turn
                     turn_light_state = OFF;
                 }
@@ -843,12 +844,12 @@ int main(void)
                     // If current polar_acceleration pass threshold (negative for left)
                     // First  toggle right
                     toggle_flash_right();
-                    toggle_rearturn_right_char();
+                    // TODO: sendtoggle_rearturn_right_char();
                     // TODO: Toggle display right turn
 
                     // Then toggle left
                     toggle_flash_left();
-                    toggle_rearturn_left_char();
+                    // TODO: sendtoggle_rearturn_left_char();
                     // TODO: Toggle display left turn
                     turn_light_state = TURN_LEFT;
                 } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
@@ -857,14 +858,14 @@ int main(void)
                 } else {
                     // If no longer turning, toggle lights off
                     toggle_flash_right();
-                    toggle_rearturn_right_char();
+                    // TODO: sendtoggle_rearturn_right_char();
                     // TODO: Toggle display right turn
                     turn_light_state = OFF;
                 }
             }
         }
 
-        // TODO: FSM for nav system
+        // FSM for nav system
         switch (nav_state) {
             case OFF: {
                 // If nav is active, move to ON state

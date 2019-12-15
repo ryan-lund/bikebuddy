@@ -134,6 +134,7 @@ static void services_init(void)
 
 /**@brief Function for application main entry.
  */
+char dist_towp[] = "0.1 mi";
 int main(void)
 {
     // Initialize.
@@ -179,11 +180,17 @@ int main(void)
     // Enter main loop.
     display_set_leftTurn(true);
     nrf_delay_ms(3000);
-    display_set_rightTurn(true);
-    nrf_delay_ms(3000);
-    display_set_leftBS(true);
-    nrf_delay_ms(3000);
-    display_set_rightBS(true);
+    display_set_direction(FRONT);
+    NRF_LOG_INFO("%s", dist_towp);
+    display_set_disttowp(dist_towp);
+    nrf_delay_ms(1000);
+    display_set_street("Stanford");
+    display_set_speed("1 mph");
+    // display_set_rightTurn(true);
+    // nrf_delay_ms(3000);
+    // display_set_leftBS(true);
+    // nrf_delay_ms(3000);
+    // display_set_rightBS(true);
     while (1) {
         //bsm_dist = bsm_get_dist();
         //bsm_danger = bsm_get_danger();

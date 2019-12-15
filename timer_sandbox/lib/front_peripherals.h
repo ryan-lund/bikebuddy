@@ -5,7 +5,8 @@ typedef enum {
   FRONT,
   LEFT,
   RIGHT,
-  ARRIVE
+  ARRIVE,
+  NONE
 } direction;
 
 

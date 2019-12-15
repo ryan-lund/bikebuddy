@@ -19,6 +19,11 @@ bool _leftTurn = 0;
 bool _rightTurn = 0;
 bool _leftBS = 0;
 bool _rightBS = 0;
+direction _dir = NONE;
+char* _distwp = "";
+char* _street = "";
+char* _speed  = "";
+
 nrf_drv_twi_t* _m_twi_master0;
 nrf_drv_twi_t* _m_twi_master1;
 
@@ -59,6 +64,113 @@ void drawRightTurn(uint8_t *buffer)
 }
 
 
+void drawArrow(uint8_t *buffer, direction dir) {
+    Adafruit_GFX_init(SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    if (dir == FRONT) {
+        Adafruit_GFX_drawRect(27, 15, 10, 49, WHITE);
+        Adafruit_GFX_fillRect(27, 15, 10, 49, WHITE);
+        Adafruit_GFX_drawTriangle(0, 15, 32, 0, 64, 15, WHITE);
+        Adafruit_GFX_fillTriangle(0, 15, 32, 0, 64, 15, WHITE);
+    } else if (dir == LEFT) {
+        Adafruit_GFX_drawRect(15, 37, 17, 10, WHITE);
+        Adafruit_GFX_fillRect(15, 37, 17, 10, WHITE);
+        Adafruit_GFX_drawTriangle(0, 32, 15, 0, 15, 64, WHITE);
+        Adafruit_GFX_fillTriangle(0, 32, 15, 0, 15, 64, WHITE);
+    } else if (dir == RIGHT) {
+        Adafruit_GFX_drawRect(0, 37, 17, 10, WHITE);
+        Adafruit_GFX_fillRect(0, 37, 17, 10, WHITE);
+        Adafruit_GFX_drawTriangle(32, 32, 17, 0, 17, 64, WHITE);
+        Adafruit_GFX_drawTriangle(32, 32, 17, 0, 17, 64, WHITE);
+    } else if (dir == ARRIVE) {
+        Adafruit_GFX_drawRect(0, 37, 17, 10, WHITE);
+    }
+}
+
+void drawDistWP(uint8_t *buffer, char* dist) {
+    Adafruit_GFX_init(SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_setCursor(50,40);
+    Adafruit_GFX_setTextColor(WHITE, WHITE);
+    Adafruit_GFX_setTextWrap(false);
+    Adafruit_GFX_setTextSize(2);
+    char * t; // first copy the pointer to not change the original
+    for (t = dist; *t != '\0'; t++) {
+        Adafruit_GFX_write(t[0]);
+    }
+}
+
+void drawSpeed(uint8_t *buffer, char* speed) {
+    Adafruit_GFX_init(SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_setCursor(0,45);
+    Adafruit_GFX_setTextColor(WHITE, WHITE);
+    Adafruit_GFX_setTextWrap(false);
+    Adafruit_GFX_setTextSize(2);
+    char * t; // first copy the pointer to not change the original
+    for (t = speed; *t != '\0'; t++) {
+        Adafruit_GFX_write(t[0]);
+    }
+}
+
+void drawStreet(uint8_t *buffer, char* street) {
+    Adafruit_GFX_init(SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT, SSD1306_drawPixel, buffer);
+    Adafruit_GFX_setCursor(0,0);
+    Adafruit_GFX_setTextColor(WHITE, WHITE);
+    Adafruit_GFX_setTextWrap(false);
+    Adafruit_GFX_setTextSize(2);
+    char * t; // first copy the pointer to not change the original
+    for (t = street; *t != '\0'; t++) {
+        Adafruit_GFX_write(t[0]);
+    }
+}
+
+void drawLeftBig() {
+    // NRF_LOG_INFO("DRAWING LEFT");
+    SSD1306_clearDisplay(bufferleft_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+    drawArrow(bufferleft_big, _dir);
+
+    if (_distwp[0] != '\0') {
+    
+        drawDistWP(bufferleft_big, _distwp);
+    }
+    SSD1306_display(_m_twi_master0, SSD1306_I2C_ADDRESS2, bufferleft_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+}
+
+
+void drawRightBig() {
+    SSD1306_clearDisplay(bufferright_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+    if (_speed[0] != '\0') {
+        drawSpeed(bufferright_big, _speed);
+    }
+    if (_street[0] != '\0') {
+        drawStreet(bufferright_big, _street);
+    }
+    Adafruit_GFX_drawLine(0, 32, 128, 32, WHITE);
+    SSD1306_display(_m_twi_master1, SSD1306_I2C_ADDRESS2, bufferright_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+}
+
+void display_set_direction(direction dir) {
+    _dir = dir;
+    drawLeftBig();
+}
+void display_set_disttowp(char* dist) {
+    _distwp = malloc(strlen(dist) + 1);
+    strcpy(_distwp, dist);
+    drawLeftBig();
+}
+
+
+void display_set_speed(char* speed) {
+    _speed = malloc(strlen(speed) + 1);
+    strcpy(_speed, speed);
+    drawRightBig();
+}
+
+
+void display_set_street(char* street) {
+    _street = malloc(strlen(street) + 1);
+    strcpy(_street, street);
+    drawRightBig();
+}
+
 void drawBS(uint8_t *buffer)
 {
 //     void drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t color);
@@ -95,6 +207,9 @@ void drawRightSmall() {
     }
     SSD1306_display(_m_twi_master1, SSD1306_I2C_ADDRESS, bufferright_small, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
 }
+
+
+
 
 
 

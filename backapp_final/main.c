@@ -109,16 +109,10 @@ int main(void)
     advertising_start();
 
     bsm_danger_t  bsm_danger;
-    bsm_dist_t bsm_dist;
-    // Enter main loop.
     while (1) {
-        //bsm_dist = bsm_get_dist();
-        //bsm_danger = bsm_get_danger();
-
-        //NRF_LOG_INFO("Left BSM Value: %d", bsm_dist.left_dist);
-        //NRF_LOG_INFO("Right BSM Value: %d", bsm_dist.right_dist);
-
-        /*switch (left_bsm_state) {
+        bsm_danger = bsm_get_danger();
+        
+        switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
                     left_bsm_state = LIGHT_ON;
@@ -158,7 +152,9 @@ int main(void)
                 }
                 break;
             }
-        }*/
+        }
+
+        nrf_delay_ms(250);
 
 
      

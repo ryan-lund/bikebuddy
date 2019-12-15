@@ -17,7 +17,7 @@
 
 #define LEFT_PIN 30
 #define RIGHT_PIN 31
-#define TAIL_PIN 3
-#define BRAKE_PIN 2
+#define TAIL_PIN 10
+#define BRAKE_PIN 3
 
 #define FLASH_INTERVAL 500000

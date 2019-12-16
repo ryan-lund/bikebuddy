@@ -14,6 +14,12 @@ void lights_init(void);
 
 void toggle_left(void);
 
+void set_left(bool set_val);
+
+void set_right(bool set_val);
+
+void set_brake(bool set_val);
+
 void toggle_right(void);
 
 void toggle_flash_left(void);

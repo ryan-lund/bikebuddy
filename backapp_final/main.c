@@ -40,21 +40,24 @@ light_state_t right_bsm_state = LIGHT_OFF;
  */
 static void backlight_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 1)
-    {
-        toggle_brakelight();
-        NRF_LOG_INFO("Recieved toggle to brakelight!");
+    if (data[0] == 0) {
+        set_brake(true);
+        NRF_LOG_INFO("Turned on brake");
+    } else if (data[0] == 1) {
+        set_brake(false);
+        NRF_LOG_INFO("Turned off brake");
     } else if (data[0] == 2) {
-        toggle_flash_left();
-        NRF_LOG_INFO("Recieved toggle to left indicator!");
+        set_left(true);
+        NRF_LOG_INFO("Turned on left");
     } else if (data[0] == 3) {
-        toggle_flash_right();
-        NRF_LOG_INFO("Recieved toggle to right indicator!");
+        set_left(false);
+        NRF_LOG_INFO("Turned off left");
     } else if (data[0] == 4) {
-        toggle_taillight();
-        NRF_LOG_INFO("Recieved toggle to taillight");
-    } else {
-        NRF_LOG_INFO("Recieved toggle for nothing");
+        set_right(true);
+        NRF_LOG_INFO("Turned on right");
+    } else if (data[0] == 5) {
+        set_right(false);
+        NRF_LOG_INFO("Turned off right");
     }
 }
 

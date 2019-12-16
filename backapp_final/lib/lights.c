@@ -37,8 +37,29 @@ void toggle_right(void) {
 	nrf_gpio_pin_toggle(RIGHT_PIN);
 }
 
+void set_left(bool set_val) {
+	if (set_val != _left) {
+		_left = set_val;
+		toggle_flash_left();
+	}
+}
+
+void set_right(bool set_val) {
+	if (set_val != _right) {
+		_right = set_val;
+		toggle_flash_right();
+	}
+}
+
+void set_brake(bool set_val) {
+	nrf_gpio_pin_clear(BRAKE_PIN);
+	if (set_val) {
+		nrf_gpio_pin_toggle(BRAKE_PIN);
+	}
+}
+
 void toggle_flash_left(void) {
-	if (!left_timer_id) {
+	if (!left_timer_id && _left) {
 		left_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_left);
 	} else {
 		virtual_timer_cancel(left_timer_id);
@@ -48,7 +69,7 @@ void toggle_flash_left(void) {
 }
 
 void toggle_flash_right(void) {
-	if (!right_timer_id) {
+	if (!right_timer_id && _right) {
 		right_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_right);
 	} else {
 		virtual_timer_cancel(right_timer_id);

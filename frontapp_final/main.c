@@ -46,6 +46,10 @@
 #define TURNLIGHT_POLAR_TURN_THRESHOLD  1234 // Righ is pos, left is neg
 #define BRAKELIGHT_DECEL_THRESHOLD  1234
 
+
+#define GYROZ_THRESHOLD 300
+#define ANGLE_THRESHOLD 15
+
 #define BOARD_SPARKFUN_NRF52840_MINI    1
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
@@ -322,7 +326,8 @@ int main(void)
     // twi_scan();
     // tsl2561_init(&twi_mngr_instance);
 
-
+    double* roll;
+    double* gyro_z;
     // Enter main loop.
     while (true) {
         // NRF_LOG_INFO("Main Loop");
@@ -366,6 +371,23 @@ int main(void)
                 }
             }
 
+            roll = get_roll_degrees();
+            gyro_z = get_gyro_z();
+            if (*roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD) {
+                display_set_rightTurn(true);
+                //NRF_LOG_INFO("THRESH LEFT REACHED");
+            } else {
+                display_set_rightTurn(false);
+            }
+
+            if (*roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD) {
+                display_set_leftTurn(true);
+                //NRF_LOG_INFO("THRESH right REACHED");
+            } else {
+                display_set_leftTurn(false);
+            }
+
+
             // // FSM for headlight
             // tsl2561_lux = tsl2561_get_lux();
             // NRF_LOG_INFO("%d",tsl2561_lux);
@@ -396,6 +418,8 @@ int main(void)
             //         break;
             //     }
             // }
+
+            
 
             // // FSM for turnlights.
             // // TODO: Replace fn with real one

@@ -13,11 +13,13 @@
 #include "buffers.h"
 #include "imu.h"
 #define FLASH_INTERVALD 800000
-#define FLASH_INTERVALD_RIGHT 900000
+#define BNO055_FLOAT_ENABLE
 int d_left_timer_id = 0;
 int d_right_timer_id = 0;
 bool _leftTurn = 0;
 bool _rightTurn = 0;
+bool _leftTurntog = 0;
+bool _rightTurntog = 0;
 bool _leftBS = 0;
 bool _rightBS = 0;
 direction _dir = NONE;
@@ -106,7 +108,7 @@ void drawSpeed(uint8_t *buffer, char* speed) {
     Adafruit_GFX_setTextWrap(false);
     Adafruit_GFX_setTextSize(2);
     char * t; // first copy the pointer to not change the original
-    for (t = speed; *t != '\0'; t++) {
+    for (t = speed; *(t+1) != '\0'; t++) {
         Adafruit_GFX_write(t[0]);
     }
 }
@@ -116,10 +118,7 @@ void drawStreet(uint8_t *buffer, char* street) {
     Adafruit_GFX_setCursor(0,0);
     Adafruit_GFX_setTextColor(WHITE, WHITE);
     Adafruit_GFX_setTextWrap(false);
-    Adafruit_GFX_setTextSize(2); 
-    if (strlen(street) >= 10) {
-        Adafruit_GFX_setTextSize(1);
-    }
+    Adafruit_GFX_setTextSize(2);
     char * t; // first copy the pointer to not change the original
     for (t = street; *(t+1) != '\0'; t++) {
         Adafruit_GFX_write(t[0]);
@@ -199,7 +198,7 @@ void drawBS(uint8_t *buffer)
 void drawLeftSmall() {
     // NRF_LOG_INFO("DRAWING LEFT");
     SSD1306_clearDisplay(bufferleft_small, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
-    if (_leftTurn) {
+    if (_leftTurntog) {
         drawLeftTurn(bufferleft_small);
     }
 
@@ -211,7 +210,7 @@ void drawLeftSmall() {
 
 void drawRightSmall() {
     SSD1306_clearDisplay(bufferright_small, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
-    if (_rightTurn) {
+    if (_rightTurntog) {
         drawRightTurn(bufferright_small);
     }
 
@@ -227,7 +226,7 @@ void drawRightSmall() {
 
 
 void display_toggle_left(void) {
-    _leftTurn = !(_leftTurn);
+    _leftTurntog = !(_leftTurntog);
     drawLeftSmall();
 }
 
@@ -238,13 +237,17 @@ void display_toggle_flash_left(void) {
 		d_left_timer_id = virtual_timer_start_repeated(FLASH_INTERVALD, display_toggle_left);
 	} else {
 		virtual_timer_cancel(d_left_timer_id);
+        _leftTurntog = 0;
 		d_left_timer_id = 0;
+        drawLeftSmall();
 	}
 }
 
 void display_set_leftTurn(bool set_val) {
-    _leftTurn = set_val;
-    display_toggle_flash_left();
+    if (set_val != _leftTurn) {
+        _leftTurn = set_val;
+        display_toggle_flash_left();
+    }
 }
 
 void display_set_leftBS(bool set_val) {
@@ -256,7 +259,7 @@ void display_set_leftBS(bool set_val) {
 
 
 void display_toggle_right(void) {
-    _rightTurn = !(_rightTurn);
+    _rightTurntog = !(_rightTurntog);
     drawRightSmall();
 }
 
@@ -264,16 +267,20 @@ void display_toggle_right(void) {
 void display_toggle_flash_right(void) {
 	NRF_LOG_INFO("STARTING RIGHT TURN TIMER");
 	if (!d_right_timer_id || _rightTurn) {
-		d_right_timer_id = virtual_timer_start_repeated(FLASH_INTERVALD_RIGHT, display_toggle_right);
+		d_right_timer_id = virtual_timer_start_repeated(FLASH_INTERVALD, display_toggle_right);
 	} else {
 		virtual_timer_cancel(d_right_timer_id);
+        _rightTurntog = 0;
+        drawRightSmall();
 		d_right_timer_id = 0;
 	}
 }
 
 void display_set_rightTurn(bool set_val) {
-    _rightTurn = set_val;
-    display_toggle_flash_right();
+    if (set_val != _rightTurn) {
+        _rightTurn = set_val;
+        display_toggle_flash_right();
+    }
 }
 
 void display_set_rightBS(bool set_val) {
@@ -281,6 +288,13 @@ void display_set_rightBS(bool set_val) {
     drawRightSmall();
 }
 
+float get_linaccel_x_float(void) {
+    float rv;
+    bno055_convert_float_linear_accel_x_msq(&rv);
+    NRF_LOG_INFO("AM CALLED %f", rv);
+    NRF_LOG_FLOAT(rv);
+    return(rv);
+}
 
 //// IMU STUFF HERE
 uint8_t get_imu_id(void) {
@@ -289,23 +303,48 @@ uint8_t get_imu_id(void) {
     return imu_id;
 }
 
-double get_linaccel_x(void) {
-    double rv = 0;
-    bno055_convert_double_linear_accel_x_msq(&rv);
-    return rv;
+double linaccel_x_double;
+double* get_linaccel_x(void) {
+    bno055_convert_double_linear_accel_x_msq(&linaccel_x_double);
+    return &linaccel_x_double;
 }
-double get_linaccel_y(void) {
+double linaccel_y_double;
+double* get_linaccel_y(void) {
     double rv = 0;
-    bno055_convert_double_linear_accel_y_msq(&rv);
-    return rv;
+    bno055_convert_double_linear_accel_y_msq(&linaccel_y_double);
+    return &linaccel_y_double;
 }
-double get_linaccel_z(void) {
-    double rv = 0;
-    bno055_convert_double_linear_accel_z_msq(&rv);
-    return rv;
+
+double linaccel_z_double;
+double* get_linaccel_z(void) {
+    bno055_convert_double_linear_accel_z_msq(&linaccel_z_double);
+    return &linaccel_z_double;
+}
+
+double roll_degrees_double;
+double* get_roll_degrees(void) {
+    bno055_convert_double_euler_r_deg(&roll_degrees_double);
+    return &roll_degrees_double;
 }
 
 
+double pitch_degrees_double;
+double* get_pitch_degrees(void) {
+    bno055_convert_double_euler_p_deg(&pitch_degrees_double);
+    return &pitch_degrees_double;
+}
+
+double heading_degrees_double;
+double* get_heading_degrees(void) {
+    bno055_convert_double_euler_h_deg(&heading_degrees_double);
+    return &heading_degrees_double;
+}
+
+double gyro_z_double;
+double* get_gyro_z(void) {
+    bno055_convert_double_gyro_z_dps(&gyro_z_double);
+    return &gyro_z_double;
+}
 
 void init_peripherals(nrf_drv_twi_t* m_twi_master0, nrf_drv_twi_t* m_twi_master1) {
     NRF_LOG_INFO("INIT CALLED");

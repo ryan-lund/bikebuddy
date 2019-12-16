@@ -69,13 +69,14 @@ static void nav_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t *
 
 static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 1)
-    {
-        toggle_flash_left();
-    }
-    else 
-    {
-        toggle_flash_left();
+    if (data[0] == 0) {
+        set_left();
+    } else if (data[0] == 1) {
+        clear_left();
+    } else if (data[0] == 2) {
+        set_right();
+    } else if (data[0] == 3) {
+        clear_right();
     }
 }
 
@@ -261,7 +262,7 @@ int main(void)
 
         // FSM for Trip Details
         // ride_button_state = get_start_ride_button_state();
-        if (ble_connected) {
+        if (true) {
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {

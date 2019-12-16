@@ -28,8 +28,24 @@ void toggle_left(void) {
 	nrf_gpio_pin_toggle(LEFT_PIN);
 }
 
+void set_left(void) {
+	nrf_gpio_pin_set(LEFT_PIN);
+}
+
+void clear_left(void) {
+	nrf_gpio_pin_clear(LEFT_PIN);
+}
+
 void toggle_right(void) {
 	nrf_gpio_pin_toggle(RIGHT_PIN);
+}
+
+void set_right(void) {
+	nrf_gpio_pin_set(RIGHT_PIN);
+}
+
+void clear_right(void) {
+	nrf_gpio_pin_clear(RIGHT_PIN);
 }
 
 void toggle_flash_left(void) {

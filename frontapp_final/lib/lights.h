@@ -13,7 +13,15 @@ void lights_init(void);
 
 void toggle_left(void);
 
+void set_left(void);
+
+void clear_left(void);
+
 void toggle_right(void);
+
+void set_right(void);
+
+void clear_right(void);
 
 void toggle_flash_left(void);
 

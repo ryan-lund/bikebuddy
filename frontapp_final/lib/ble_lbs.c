@@ -66,6 +66,12 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
     {
         p_lbs->nav_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
+    // DISTANCE CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->distance_char_handles.value_handle)
+        && (p_lbs->light_write_handler != NULL))
+    {
+        p_lbs->distance_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+    }
     // DIRECTION CHAR HANDLER
     if (   (p_evt_write->handle == p_lbs->direction_char_handles.value_handle)
         && (p_lbs->direction_write_handler != NULL))
@@ -80,7 +86,7 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
     }
     // BLIND SPOT CHAR HANDLER
     if (   (p_evt_write->handle == p_lbs->blind_char_handles.value_handle)
-        && (p_lbs->light_write_handler != NULL))
+        && (p_lbs->blind_write_handler != NULL))
     {
         p_lbs->blind_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
@@ -115,6 +121,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     p_lbs->direction_write_handler = p_lbs_init->direction_write_handler;
     p_lbs->light_write_handler = p_lbs_init->light_write_handler;
     p_lbs->blind_write_handler = p_lbs_init->blind_write_handler;
+    p_lbs->distance_write_handler = p_lbs_init->distance_write_handler;
 
     // Add service.
     ble_uuid128_t base_uuid = {LBS_UUID_BASE};
@@ -147,7 +154,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
         return err_code;
     }
 
-    // Add Write characteristic.
+    // Add NAV characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_NAV_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
@@ -161,6 +168,21 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 
     characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->nav_char_handles);
 
+    // Add Distance characteristic.
+    memset(&add_char_params, 0, sizeof(add_char_params));
+    add_char_params.uuid             = LBS_UUID_DISTANCE_CHAR;
+    add_char_params.uuid_type        = p_lbs->uuid_type;
+    add_char_params.init_len         = 64*sizeof(uint8_t*);
+    add_char_params.max_len          = 64*sizeof(uint8_t*);
+    add_char_params.char_props.read  = 1;
+    add_char_params.char_props.write = 1;
+
+    add_char_params.read_access  = SEC_OPEN;
+    add_char_params.write_access = SEC_OPEN;
+
+    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->distance_char_handles);
+
+    // Add DIRECTION characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_DIRECTION_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
@@ -174,6 +196,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 
     characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->direction_char_handles);
 
+    // Add BLIND SPOT characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_BLIND_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
@@ -187,6 +210,8 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 
     characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->blind_char_handles);
 
+
+    // Add LIGHT characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_LIGHT_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;

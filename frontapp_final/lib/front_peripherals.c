@@ -13,6 +13,7 @@
 #include "buffers.h"
 #include "imu.h"
 #define FLASH_INTERVALD 800000
+#define FLASH_INTERVALD_RIGHT 900000
 int d_left_timer_id = 0;
 int d_right_timer_id = 0;
 bool _leftTurn = 0;
@@ -93,7 +94,7 @@ void drawDistWP(uint8_t *buffer, char* dist) {
     Adafruit_GFX_setTextWrap(false);
     Adafruit_GFX_setTextSize(2);
     char * t; // first copy the pointer to not change the original
-    for (t = dist; *t != '\0'; t++) {
+    for (t = dist; *(t+1) != '\0'; t++) {
         Adafruit_GFX_write(t[0]);
     }
 }
@@ -115,9 +116,12 @@ void drawStreet(uint8_t *buffer, char* street) {
     Adafruit_GFX_setCursor(0,0);
     Adafruit_GFX_setTextColor(WHITE, WHITE);
     Adafruit_GFX_setTextWrap(false);
-    Adafruit_GFX_setTextSize(2);
+    Adafruit_GFX_setTextSize(2); 
+    if (strlen(street) >= 10) {
+        Adafruit_GFX_setTextSize(1);
+    }
     char * t; // first copy the pointer to not change the original
-    for (t = street; *t != '\0'; t++) {
+    for (t = street; *(t+1) != '\0'; t++) {
         Adafruit_GFX_write(t[0]);
     }
 }
@@ -260,7 +264,7 @@ void display_toggle_right(void) {
 void display_toggle_flash_right(void) {
 	NRF_LOG_INFO("STARTING RIGHT TURN TIMER");
 	if (!d_right_timer_id || _rightTurn) {
-		d_right_timer_id = virtual_timer_start_repeated(FLASH_INTERVALD, display_toggle_right);
+		d_right_timer_id = virtual_timer_start_repeated(FLASH_INTERVALD_RIGHT, display_toggle_right);
 	} else {
 		virtual_timer_cancel(d_right_timer_id);
 		d_right_timer_id = 0;

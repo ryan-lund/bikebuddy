@@ -56,7 +56,7 @@ def connect_bikebuddy_module(MAC_ADDR):
     return btle.Peripheral(MAC_ADDR, "random")
 
 def float_to_hex(f):
-    return hex(struct.unpack('>I', struct.pack('<f', f))[0])[2:]
+    return hex(struct.unpack('>I', struct.pack('<f', f))[0])[2:].zfill(8)
 
 
 if __name__ == "__main__":
@@ -88,33 +88,34 @@ if __name__ == "__main__":
     front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
     print(front_light_char)
 
-    front_back_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    print(front_distance_char)
+
+    front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
     print(front_back_char)
     desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
     desc.write(bytes.fromhex('0100'))
 
-    # byte allocation distance (4), direction (1), rest (15)
-
-
-    # front_nav_char.write(bytes.fromhex('01'))
-    # front_nav_char.write(bytes.fromhex('00'))
-    # front_direction_char.write(bytes.fromhex('01'))
-    # front_direction_char.write(bytes.fromhex('00'))
-    # front_light_char.write(bytes.fromhex('01'))
-    # front_light_char.write(bytes.fromhex('00'))
-    # front_blind_char.write(bytes.fromhex('01'))
-    # front_blind_char.write(bytes.fromhex('00'))
     try:
         while True:
             # print("waiting")
             # front_ctrl_char.write(bytes.fromhex('01'))
             # while front_p.waitForNotifications(0.5):
             #     print("got notification")
-            value = input("Enter value to module:\n")
-            # # print(bytes.fromhex(float_to_hex(float(value))))
-            # # front_ctrl_char.write(bytes.fromhex(float_to_hex(float(value))))
-            # front_blind_char.write(bytes.fromhex('{0}'.format(value)))
-            # front_direction_char.write(bytes.fromhex('{0}'.format(value)))
+            value = input("which:\n")
+            if value == 'BS':
+                value = input("enter value:\n")
+                front_blind_char.write(bytes.fromhex('{0}'.format(value)))
+            if value == 'NAV':
+                value = input("enter value:\n")
+                front_nav_char.write(bytes(value, 'utf-8'))
+            if value == 'DIST':
+                distance_float = input("enter float:\n")
+                distance_string = input("enter string: \n")
+                front_distance_char.write(bytes.fromhex(float_to_hex(float(distance_float))) + bytes(distance_string, 'utf-8'))         
+            if value == 'DIR':
+                value = input("enter value:\n")
+                front_direction_char.write(bytes.fromhex('{0}'.format(value)))
     finally:
         front_p.disconnect()
     front_p.disconnect()

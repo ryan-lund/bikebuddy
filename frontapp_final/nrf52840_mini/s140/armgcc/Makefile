@@ -46,12 +46,15 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_saadc.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twim.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_twi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_saadc.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_timer.c \
   $(SDK_ROOT)/components/libraries/twi_mngr/nrf_twi_mngr.c \
   $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/libraries/cli/nrf_cli.c \
@@ -65,12 +68,11 @@ SRC_FILES += \
   $(PROJ_DIR)/lib/buttons.c \
   $(PROJ_DIR)/lib/lights.c \
   $(PROJ_DIR)/lib/front_peripherals.c \
-  $(PROJ_DIR)/lib/Adafruit_GFX.c \
-  $(PROJ_DIR)/lib/glcdfont.c \
-  $(PROJ_DIR)/lib/SSD1306_mult.c\
-  $(PROJ_DIR)/lib/bno055.c \
-  $(PROJ_DIR)/lib/bno055_support.c \
-  $(PROJ_DIR)/lib/imu.c \
+  $(PROJ_DIR)/lib/SSD1306/Adafruit_GFX.c \
+  $(PROJ_DIR)/lib/SSD1306/glcdfont.c \
+  $(PROJ_DIR)/lib/SSD1306/SSD1306_mult.c\
+  $(PROJ_DIR)/lib/BNO055_driver/bno055.c \
+  $(PROJ_DIR)/lib/BNO055_driver/imu.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -240,7 +242,7 @@ CFLAGS += -DS140
 CFLAGS += -DSOFTDEVICE_PRESENT
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
-CFLAGS += -Wall -Werror -Wno-unused-variable -Wno-int-to-pointer-cast -Wno-unused-function
+CFLAGS += -Wall -Werror -Wno-unused-variable -Wno-int-to-pointer-cast -Wno-unused-function -Wno-unused-function -Wno-misleading-indentation -Wno-pointer-compare -Wno-error=unused-variable -Wno-unused-function -Wno-incompatible-pointer-types
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing

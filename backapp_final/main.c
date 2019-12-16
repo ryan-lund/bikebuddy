@@ -89,6 +89,7 @@ int main(void)
 {
     // Initialize.
     log_init();
+    NRF_LOG_INFO("1 Back App Started.");
     leds_init();
     timers_init();
     power_management_init();
@@ -97,6 +98,7 @@ int main(void)
     gatt_init();
     services_init();
     advertising_init();
+    NRF_LOG_INFO("2 Back App Started.");
     conn_params_init();
     bsm_init();
     virtual_timer_init();
@@ -104,13 +106,13 @@ int main(void)
     nrf_delay_ms(3000);
 
     // Start execution.
-    NRF_LOG_INFO("Back App Started.");
+    NRF_LOG_INFO("3 Back App Started.");
     advertising_start();
 
-    bsm_danger_t  bsm_danger;
+    bsm_danger_t bsm_danger;
     while (1) {
         bsm_danger = bsm_get_danger();
-        
+        NRF_LOG_INFO("Main Loop Started.");
         switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
@@ -158,9 +160,7 @@ int main(void)
         }
 
         nrf_delay_ms(250);
-
-
-     
+        NRF_LOG_FLUSH();
         idle_state_handle();
     }
 }

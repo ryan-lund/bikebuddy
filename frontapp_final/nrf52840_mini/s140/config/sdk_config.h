@@ -5818,7 +5818,7 @@
 // <7=> 7 
 
 #ifndef TWI_DEFAULT_CONFIG_IRQ_PRIORITY
-#define TWI_DEFAULT_CONFIG_IRQ_PRIORITY 3
+#define TWI_DEFAULT_CONFIG_IRQ_PRIORITY 1
 #endif
 
 // <e> TWI0_ENABLED - Enable TWI0 instance
@@ -5838,7 +5838,7 @@
 // <e> TWI1_ENABLED - Enable TWI1 instance
 //==========================================================
 #ifndef TWI1_ENABLED
-#define TWI1_ENABLED 0
+#define TWI1_ENABLED 1
 #endif
 // <q> TWI1_USE_EASY_DMA  - Use EasyDMA (if present)
  

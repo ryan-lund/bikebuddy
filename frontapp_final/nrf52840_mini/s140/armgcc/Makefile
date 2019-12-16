@@ -64,6 +64,13 @@ SRC_FILES += \
   $(PROJ_DIR)/lib/tsl2561.c \
   $(PROJ_DIR)/lib/buttons.c \
   $(PROJ_DIR)/lib/lights.c \
+  $(PROJ_DIR)/lib/front_peripherals.c \
+  $(PROJ_DIR)/lib/Adafruit_GFX.c \
+  $(PROJ_DIR)/lib/glcdfont.c \
+  $(PROJ_DIR)/lib/SSD1306_mult.c\
+  $(PROJ_DIR)/lib/bno055.c \
+  $(PROJ_DIR)/lib/bno055_support.c \
+  $(PROJ_DIR)/lib/imu.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -81,6 +88,8 @@ SRC_FILES += \
 # Include folders common to all targets
 INC_FOLDERS += \
   $(PROJ_DIR)/lib \
+  $(PROJ_DIR)/lib/SSD1306 \
+  $(PROJ_DIR)/lib/BNO055_driver \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \
   $(SDK_ROOT)/components/nfc/t4t_parser/hl_detection_procedure \

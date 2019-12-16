@@ -107,6 +107,16 @@ int main(void)
     // Enter main loop.
     bsm_danger_t bsm_danger;
     while (1) {
+        nrf_delay_ms(250);
+        float speed = 4.20;
+        float distance = 13.37;
+        uint32_t time = 420;
+        uint8_t data[8];
+        NRF_LOG_INFO("Sending Speed Distance Notification");
+        memcpy(data, &speed, sizeof(speed));
+        memcpy(data+4, &distance, sizeof(distance));
+        memcpy(data+8, &time, sizeof(time));
+        send_speeddistance(m_conn_handle, &m_lbs, data);
         // bsm_danger = bsm_get_danger();
         // NRF_LOG_HEXDUMP_INFO(&bsm_danger, sizeof(bsm_danger));
         // NRF_LOG_INFO("Main Loop Started.");

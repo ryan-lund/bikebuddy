@@ -3,7 +3,7 @@
 #define LIGHTS_VARS
 #define LEFT_PIN 28
 #define RIGHT_PIN 29
-#define HEAD_PIN 30
+#define HEAD_PIN 31
 #define FLASH_INTERVAL 500000
 
 #define BUTTONS_VARS

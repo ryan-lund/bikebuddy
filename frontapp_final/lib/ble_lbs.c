@@ -48,20 +48,41 @@
 
 /**@brief Function for handling the Write event.
  *
- * @param[in] p_lbs      LED Button Service structure.
+ * @param[in] p_lbs      Bike Buddy Service structure.
  * @param[in] p_ble_evt  Event received from the BLE stack.
  */
 static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
 {
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
-    NRF_LOG_INFO("length %d", p_evt_write->len);
-    NRF_LOG_HEXDUMP_INFO(&p_evt_write->data, p_evt_write->len);
-    NRF_LOG_INFO("handle %d",p_evt_write->handle)
-    NRF_LOG_INFO("uuid %d",p_evt_write->uuid.uuid)
-    if (   (p_evt_write->handle == p_lbs->led_char_handles.value_handle)
-        && (p_lbs->front_write_handler != NULL))
+    // NRF_LOG_INFO("length %d", p_evt_write->len);
+    // NRF_LOG_HEXDUMP_INFO(&p_evt_write->data, p_evt_write->len);
+    // NRF_LOG_INFO("handle %d",p_evt_write->handle)
+    // NRF_LOG_INFO("uuid %d",p_evt_write->uuid.uuid)
+    // NRF_LOG_FLUSH();
+    
+    // NAV CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->nav_char_handles.value_handle)
+        && (p_lbs->nav_write_handler != NULL))
     {
-        p_lbs->front_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+        p_lbs->nav_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+    }
+    // DIRECTION CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->direction_char_handles.value_handle)
+        && (p_lbs->direction_write_handler != NULL))
+    {
+        p_lbs->direction_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+    }
+    // FRONT LIGHT CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->light_char_handles.value_handle)
+        && (p_lbs->light_write_handler != NULL))
+    {
+        p_lbs->light_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+    }
+    // BLIND SPOT CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->blind_char_handles.value_handle)
+        && (p_lbs->light_write_handler != NULL))
+    {
+        p_lbs->blind_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
 }
 
@@ -90,7 +111,10 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     ble_add_char_params_t add_char_params;
 
     // Initialize service structure.
-    p_lbs->front_write_handler = p_lbs_init->front_write_handler;
+    p_lbs->nav_write_handler = p_lbs_init->nav_write_handler;
+    p_lbs->direction_write_handler = p_lbs_init->direction_write_handler;
+    p_lbs->light_write_handler = p_lbs_init->light_write_handler;
+    p_lbs->blind_write_handler = p_lbs_init->blind_write_handler;
 
     // Add service.
     ble_uuid128_t base_uuid = {LBS_UUID_BASE};
@@ -103,9 +127,9 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &p_lbs->service_handle);
     VERIFY_SUCCESS(err_code);
 
-    // Add Button characteristic.
+    // Add Read characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
-    add_char_params.uuid              = LBS_UUID_BUTTON_CHAR;
+    add_char_params.uuid              = LBS_UUID_BACK_CHAR;
     add_char_params.uuid_type         = p_lbs->uuid_type;
     add_char_params.init_len          = sizeof(uint8_t);
     add_char_params.max_len           = sizeof(uint8_t);
@@ -117,15 +141,41 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 
     err_code = characteristic_add(p_lbs->service_handle,
                                   &add_char_params,
-                                  &p_lbs->button_char_handles);
+                                  &p_lbs->back_char_handles);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
     }
 
-    // Add LED characteristic.
+    // Add Write characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
-    add_char_params.uuid             = LBS_UUID_LED_CHAR;
+    add_char_params.uuid             = LBS_UUID_NAV_CHAR;
+    add_char_params.uuid_type        = p_lbs->uuid_type;
+    add_char_params.init_len         = 20*sizeof(uint8_t*);
+    add_char_params.max_len          = 20*sizeof(uint8_t*);
+    add_char_params.char_props.read  = 1;
+    add_char_params.char_props.write = 1;
+
+    add_char_params.read_access  = SEC_OPEN;
+    add_char_params.write_access = SEC_OPEN;
+
+    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->nav_char_handles);
+
+    memset(&add_char_params, 0, sizeof(add_char_params));
+    add_char_params.uuid             = LBS_UUID_DIRECTION_CHAR;
+    add_char_params.uuid_type        = p_lbs->uuid_type;
+    add_char_params.init_len         = 20*sizeof(uint8_t*);
+    add_char_params.max_len          = 20*sizeof(uint8_t*);
+    add_char_params.char_props.read  = 1;
+    add_char_params.char_props.write = 1;
+
+    add_char_params.read_access  = SEC_OPEN;
+    add_char_params.write_access = SEC_OPEN;
+
+    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->direction_char_handles);
+
+    memset(&add_char_params, 0, sizeof(add_char_params));
+    add_char_params.uuid             = LBS_UUID_BLIND_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
     add_char_params.init_len         = 64*sizeof(uint8_t*);
     add_char_params.max_len          = 64*sizeof(uint8_t*);
@@ -135,19 +185,32 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     add_char_params.read_access  = SEC_OPEN;
     add_char_params.write_access = SEC_OPEN;
 
-    return characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->led_char_handles);
+    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->blind_char_handles);
+
+    memset(&add_char_params, 0, sizeof(add_char_params));
+    add_char_params.uuid             = LBS_UUID_LIGHT_CHAR;
+    add_char_params.uuid_type        = p_lbs->uuid_type;
+    add_char_params.init_len         = 20*sizeof(uint8_t*);
+    add_char_params.max_len          = 20*sizeof(uint8_t*);
+    add_char_params.char_props.read  = 1;
+    add_char_params.char_props.write = 1;
+
+    add_char_params.read_access  = SEC_OPEN;
+    add_char_params.write_access = SEC_OPEN;
+
+    return characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->light_char_handles);
 }
 
 
-uint32_t ble_lbs_on_state_change(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t button_state)
+uint32_t ble_lbs_on_state_change(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t state)
 {
     ble_gatts_hvx_params_t params;
-    uint16_t len = sizeof(button_state);
+    uint16_t len = sizeof(state);
 
     memset(&params, 0, sizeof(params));
     params.type   = BLE_GATT_HVX_NOTIFICATION;
-    params.handle = p_lbs->button_char_handles.value_handle;
-    params.p_data = &button_state;
+    params.handle = p_lbs->back_char_handles.value_handle;
+    params.p_data = &state;
     params.p_len  = &len;
 
     return sd_ble_gatts_hvx(conn_handle, &params);

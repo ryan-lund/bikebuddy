@@ -6,16 +6,12 @@ from urllib.parse import urlencode
 import time
 import struct
 
-
-# parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
-# parser.add_argument('start', metavar='A', type=str, help='Address of the form Street-City-State')
-# parser.add_argument('end', metavar='A', type=str, help='Address of the form Street-City-State')
-# args = parser.parse_args()
-
-
 HEADERS = {
     'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
 }
+
+# FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
+FRONT_MAC = "F5:0C:E1:0F:07:24"
 
 def get_geocode(location):
     address, city, state = location.split('-')
@@ -44,7 +40,7 @@ def get_directions(start, end):
         turn_by_turn.append("{0}m {1}".format(step['distance'],step['instruction']))
     return turn_by_turn
 
-class MyDelegate(btle.DefaultDelegate):
+class BikeBuddyDelegate(btle.DefaultDelegate):
     def __init__(self):
         btle.DefaultDelegate.__init__(self)
         # ... initialise here
@@ -53,16 +49,22 @@ class MyDelegate(btle.DefaultDelegate):
         # ... perhaps check cHandle
         # ... process 'data'
         print(data)
+        return
 
-FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
+def connect_bikebuddy_module(MAC_ADDR):
+    return btle.Peripheral(MAC_ADDR, "random")
+
+def float_to_hex(f):
+    return hex(struct.unpack('>I', struct.pack('<f', f))[0])[2:]
+
 
 if __name__ == "__main__":
-    def connect_bikebuddy_module(MAC_ADDR):
-        return btle.Peripheral(MAC_ADDR, "random")
+    print("Getting directions")
+    # directions = get_directions('24'
 
     print("Connecting to Front Module...")
     front_p = connect_bikebuddy_module(FRONT_MAC)
-    front_p.setDelegate(MyDelegate())
+    front_p.setDelegate(BikeBuddyDelegate())
     print("Connected to Front Module!")
 
     # print("Connecting to Back Module...")
@@ -71,33 +73,46 @@ if __name__ == "__main__":
     # Set up services and characteristics
 
     front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    front_back_ctrl_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    print(front_back_ctrl_char)
-    desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
+    front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print(front_nav_char)
+    # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
+    # desc.write(bytes.fromhex('0100'))
+
+    front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print(front_direction_char)
+
+    front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print(front_blind_char)
+
+    front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
+    print(front_light_char)
+
+    front_back_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    print(front_back_char)
+    desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
     desc.write(bytes.fromhex('0100'))
 
-    front_back_ctrl_handle = front_back_ctrl_char.getHandle()
-    front_ctrl_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    print(front_ctrl_char)
+    # byte allocation distance (4), direction (1), rest (15)
 
 
-
-    # distance (4), direction (1)
-    def float_to_hex(f):
-        return hex(struct.unpack('<I', struct.pack('<f', f))[0])[2:]
-
-
-    front_ctrl_char.write(bytes.fromhex('01'))
-    front_ctrl_char.write(bytes.fromhex('05'))
+    front_nav_char.write(bytes.fromhex('01'))
+    front_nav_char.write(bytes.fromhex('00'))
+    front_direction_char.write(bytes.fromhex('01'))
+    front_direction_char.write(bytes.fromhex('00'))
+    front_light_char.write(bytes.fromhex('01'))
+    front_light_char.write(bytes.fromhex('00'))
+    front_blind_char.write(bytes.fromhex('01'))
+    front_blind_char.write(bytes.fromhex('00'))
     try:
         while True:
             print("waiting")
             # front_ctrl_char.write(bytes.fromhex('01'))
-            while front_p.waitForNotifications(3.0):
+            while front_p.waitForNotifications(0.5):
                 print("got notification")
-        #     value = input("Enter value to module:\n")
-        #     # # print(bytes.fromhex(float_to_hex(float(value))))
-        #     # # front_ctrl_char.write(bytes.fromhex(float_to_hex(float(value))))
-        #     front_ctrl_char.write(bytes.fromhex('{0}'.format(value)))
+            value = input("Enter value to module:\n")
+            # # print(bytes.fromhex(float_to_hex(float(value))))
+            # # front_ctrl_char.write(bytes.fromhex(float_to_hex(float(value))))
+            front_direction_char.write(bytes.fromhex('{0}'.format(value)))
     finally:
         front_p.disconnect()
+    front_p.disconnect()

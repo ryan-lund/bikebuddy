@@ -38,7 +38,7 @@ light_state_t right_bsm_state = LIGHT_OFF;
  * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
  * @param[in] led_state Written/desired state of the LED.
  */
-static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state)
+static void back_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state, uint16_t len)
 {
     NRF_LOG_HEXDUMP_INFO(led_state,32);
     NRF_LOG_INFO("%x", led_state[0]);
@@ -76,7 +76,7 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 
     // Initialize LBS.
-    init.led_write_handler = led_write_handler;
+    init.back_write_handler = back_write_handler;
 
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
@@ -91,7 +91,6 @@ int main(void)
     log_init();
     leds_init();
     timers_init();
-    buttons_init();
     power_management_init();
     ble_stack_init();
     gap_params_init();
@@ -109,20 +108,15 @@ int main(void)
     advertising_start();
 
     bsm_danger_t  bsm_danger;
-    bsm_dist_t bsm_dist;
-    // Enter main loop.
     while (1) {
-        //bsm_dist = bsm_get_dist();
-        //bsm_danger = bsm_get_danger();
-
-        //NRF_LOG_INFO("Left BSM Value: %d", bsm_dist.left_dist);
-        //NRF_LOG_INFO("Right BSM Value: %d", bsm_dist.right_dist);
-
-        /*switch (left_bsm_state) {
+        bsm_danger = bsm_get_danger();
+        
+        switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
                     left_bsm_state = LIGHT_ON;
                     // TODO: WRITE A 0 ON BACK->FRONT BLE
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
                 } else {
                     left_bsm_state = LIGHT_OFF;
                 }
@@ -132,6 +126,7 @@ int main(void)
                 if (!bsm_danger.left_danger) {
                     left_bsm_state = LIGHT_OFF;
                     // TODO: WRITE A 0 ON BACK->FRONT BLE
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
                 } else {
                     left_bsm_state = LIGHT_ON;
                 }
@@ -144,6 +139,7 @@ int main(void)
                 if (bsm_danger.right_danger) {  
                     right_bsm_state = LIGHT_ON;
                     // TODO: WRITE A 1 ON BACK->FRONT BLE
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
                 } else {
                     right_bsm_state = LIGHT_OFF;
                 }
@@ -153,12 +149,15 @@ int main(void)
                 if (!bsm_danger.right_danger) {
                     right_bsm_state = LIGHT_OFF;
                     // TODO: WRITE A 1 ON BACK->FRONT BLE
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
                 } else {
                     right_bsm_state = LIGHT_ON;
                 }
                 break;
             }
-        }*/
+        }
+
+        nrf_delay_ms(250);
 
 
      

@@ -8,7 +8,6 @@ MEMORY
   FLASH (rx) : ORIGIN = 0x26000, LENGTH = 0xce000
   RAM (rwx) :  ORIGIN = 0x20002300, LENGTH = 0x3dd00
 }
-
 SECTIONS
 {
 }

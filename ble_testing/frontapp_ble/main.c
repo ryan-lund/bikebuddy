@@ -26,28 +26,80 @@
 #include "nrf_log_default_backends.h"
 
 
-char direction[64];
-static void front_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * led_state, uint16_t len)
+static void nav_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    memcpy(direction, led_state, sizeof(direction));
-    NRF_LOG_INFO("%s", direction);
-    if (led_state[0] == 1)
+    if (data[0] == 1)
     {
-        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
-        NRF_LOG_INFO("Received LED ON! BRAKE");
-    }
-    else if (led_state[0]== 2)
-    {
-        NRF_LOG_INFO("Received LED OFF! LEFT");
-    }
-    else if (led_state[0]== 3)
-    {
-        NRF_LOG_INFO("Received LED OFF! RIGHT");
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
+        NRF_LOG_INFO("Navigation Enabled");
     }
     else 
     {
-        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
-        NRF_LOG_HEXDUMP_INFO(led_state, 32);
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
+        NRF_LOG_HEXDUMP_INFO(data, 32);
+    }
+}
+
+static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
+{
+    if (data[0] == 1)
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 6);
+        NRF_LOG_INFO("Got Blind Spot");
+    }
+    else 
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 7);
+        NRF_LOG_HEXDUMP_INFO(data, 32);
+    }
+}
+
+
+float distance;
+char direction[15];
+static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
+{
+    // distance = 11.32;
+    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    memcpy(&distance, data, sizeof(distance));
+    NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    memcpy(direction, data, sizeof(direction));
+    NRF_LOG_INFO("%s", direction);
+    // TODO
+    if (data[0] == 1)
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
+        NRF_LOG_INFO("Navigation Enabled");
+    }
+    else 
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
+        NRF_LOG_HEXDUMP_INFO(data, 32);
+    }
+}
+
+static void light_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
+{
+    // distance = 11.32;
+    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    // memcpy(&distance, data, sizeof(distance));
+    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
+    // memcpy(direction, data, sizeof(direction));
+    // NRF_LOG_INFO("%s", direction);
+    // TODO
+    if (data[0] == 1)
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+        NRF_LOG_INFO("Navigation Enabled");
+    }
+    else 
+    {
+        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+        NRF_LOG_HEXDUMP_INFO(data, 32);
     }
 }
 
@@ -64,7 +116,10 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 
     // Initialize LBS.
-    init.front_write_handler = front_write_handler;
+    init.nav_write_handler = nav_write_handler;
+    init.direction_write_handler = direction_write_handler;
+    init.blind_write_handler = blind_write_handler;
+    init.light_write_handler = light_write_handler;
 
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
@@ -101,12 +156,6 @@ int main(void)
     for (;;)
     {
         idle_state_handle();
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 1")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
-        // nrf_delay_ms(500);
-        // NRF_LOG_INFO("sending 0")
-        // ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
     }
 }
 

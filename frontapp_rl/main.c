@@ -69,7 +69,11 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
+#include "virtual_timer.h"
+#include "hall_effect.h"
 #include "tsl2561.h"
+#include "bmp085.h"
+#include "buttons.h"
 #include "nrf_twi_mngr.h"
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
@@ -538,24 +542,6 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 }
 
 
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    ret_code_t err_code;
-
-    //The array must be static because a pointer to it will be saved in the button handler module.
-    static app_button_cfg_t buttons[] =
-    {
-        {LEDBUTTON_BUTTON, false, BUTTON_PULL, button_event_handler}
-    };
-
-    err_code = app_button_init(buttons, ARRAY_SIZE(buttons),
-                               BUTTON_DETECTION_DELAY);
-    APP_ERROR_CHECK(err_code);
-}
-
-
 static void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
@@ -582,7 +568,7 @@ void twi_init(void) {
   const nrf_drv_twi_config_t twi_config = {
     .scl                = ARDUINO_SCL_PIN,
     .sda                = ARDUINO_SDA_PIN,
-    .frequency          = NRF_TWI_FREQ_400K,
+    .frequency          = NRF_TWI_FREQ_100K,
   };
 
   //err_code = nrf_drv_twi_init(&twi_instance, &twi_config, NULL, NULL);
@@ -604,6 +590,7 @@ static void twi_scan(void) {
   
   if (!_twi_init) {
     NRF_LOG_INFO("TWI is not init");
+    NRF_LOG_FLUSH();
     return;
   }
 
@@ -650,7 +637,6 @@ int main(void)
     log_init();
     leds_init();
     timers_init();
-    buttons_init();
     power_management_init();
     ble_stack_init();
     gap_params_init();
@@ -658,25 +644,37 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    twi_init(); // IMPORTANT
+
+    /* Our inits */
+    virtual_timer_init(); // IMPORTANT: COMES FIRST
+    twi_init(); // IMPORTANT: COMES SECOND
+    buttons_init();
+    hall_effect_init();
     nrf_delay_ms(3000);
 
     // Start execution.
     NRF_LOG_INFO("Front App Started.");
-    advertising_start();
     NRF_LOG_FLUSH();
+
+    advertising_start();
     twi_scan();
-    tsl2561_init(&twi_mngr_instance);
+    bmp085_init(&twi_mngr_instance);
+    uint32_t bmp085_temp = bmp085_getTemperature();
     // Enter main loop.
 
-    uint32_t tsl2561_lux = 0;
+    //uint32_t bmp085_temp = 0;
+    //float bmp085_alt = 0.0;
+    hall_effect_reset();
     for (;;)
     {
-        tsl2561_lux = tsl2561_get_lux();
+        //bmp085_temp = bmp085_getTemperature();
+        //bmp085_alt = bmp085_get_altitude_meters();
+        //NRF_LOG_INFO("%d \n", bmp085_temp);
+        //NRF_LOG_INFO("%f \n", bmp085_alt);
+        //NRF_LOG_INFO("%f", hall_effect_get_dist());
+        //NRF_LOG_FLUSH();
         idle_state_handle();
         nrf_delay_ms(1000);
-        NRF_LOG_INFO("%d \n", tsl2561_lux);
-        NRF_LOG_FLUSH();
     }
 }
 

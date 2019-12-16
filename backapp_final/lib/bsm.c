@@ -4,6 +4,9 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 
 #include "bsm.h"
 #include "backapp.h"
@@ -26,32 +29,39 @@ void bsm_init(void) {
 	nrf_gpio_pin_dir_set(BSM_LEFT_ECHO_PIN, NRF_GPIO_PIN_DIR_INPUT);
 	nrf_gpio_pin_dir_set(BSM_RIGHT_ECHO_PIN, NRF_GPIO_PIN_DIR_INPUT);
 
-	// insure that all pins are set to low
-	nrf_gpio_pin_clear(BSM_LEFT_TRIG_PIN);
-	nrf_gpio_pin_clear(BSM_RIGHT_TRIG_PIN); 
+	// insure that all pins are set to high (due to n-transistor)
+	nrf_gpio_pin_set(BSM_LEFT_TRIG_PIN);
+	nrf_gpio_pin_set(BSM_RIGHT_TRIG_PIN); 
 }
 
 uint32_t bsm_get_single_dist(uint32_t trig, uint32_t echo) {
   uint32_t start = 0;
   uint32_t stop = 0;
   // send pulse to sensor
-  nrf_gpio_pin_clear(trig);
-  nrf_delay_us(20);
   nrf_gpio_pin_set(trig);
-  nrf_delay_us(12);
+  nrf_delay_us(20);
   nrf_gpio_pin_clear(trig);
+  nrf_delay_us(12);
+  nrf_gpio_pin_set(trig);
   nrf_delay_us(20); 
 
+  //NRF_LOG_INFO("Pluse sent to trig");
+  //NRF_LOG_FLUSH();
   // time high response
   while(!nrf_gpio_pin_read(echo));
 
   // Start timer
   start = read_timer();
-
+  //NRF_LOG_INFO("Echo is high");
+  //NRF_LOG_FLUSH();
   while(nrf_gpio_pin_read(echo));
+  //NRF_LOG_INFO("Echo is low");
+  //NRF_LOG_FLUSH();
 
   stop = read_timer();
 
+  NRF_LOG_INFO("Stop: %d, Start: %d", stop, start);
+  NRF_LOG_FLUSH();
   float dist = 0.5 * US_TO_CM * tick_distance(stop, start);
   return (int)(dist + 0.5); // return rounded distance in cm
 }

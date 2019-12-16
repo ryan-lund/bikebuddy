@@ -39,17 +39,17 @@
  */
 /** @file
  *
- * @defgroup ble_lbs LED Button Service Server
+ * @defgroup ble_lbs Bike Buddy Service Server
  * @{
  * @ingroup ble_sdk_srv
  *
- * @brief LED Button Service Server module.
+ * @brief Bike Buddy Service Server module.
  *
- * @details This module implements a custom LED Button Service with an LED and Button Characteristics.
- *          During initialization, the module adds the LED Button Service and Characteristics
+ * @details This module implements a custom Bike Buddy Service with an LED and Button Characteristics.
+ *          During initialization, the module adds the Bike Buddy Service and Characteristics
  *          to the BLE stack database.
  *
- *          The application must supply an event handler for receiving LED Button Service
+ *          The application must supply an event handler for receiving Bike Buddy Service
  *          events. Using this handler, the service notifies the application when the
  *          LED value changes.
  *
@@ -91,37 +91,52 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
                               0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
-#define LBS_UUID_SERVICE     0x1523
-#define LBS_UUID_BUTTON_CHAR 0x1524
-#define LBS_UUID_LED_CHAR    0x1525
+#define LBS_UUID_SERVICE           0x1523
+#define LBS_UUID_NAV_CHAR          0x1524
+#define LBS_UUID_DIRECTION_CHAR    0x1525
+#define LBS_UUID_BLIND_CHAR        0x1526
+#define LBS_UUID_LIGHT_CHAR        0x1527
+#define LBS_UUID_BACK_CHAR         0x1528
 
 
 // Forward declaration of the ble_lbs_t type.
 typedef struct ble_lbs_s ble_lbs_t;
 
-typedef void (*ble_lbs_front_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
+typedef void (*ble_lbs_nav_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
+typedef void (*ble_lbs_direction_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
+typedef void (*ble_lbs_light_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
+typedef void (*ble_lbs_blind_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
 
-/** @brief LED Button Service init structure. This structure contains all options and data needed for
+/** @brief Bike Buddy Service init structure. This structure contains all options and data needed for
  *        initialization of the service.*/
 typedef struct
 {
-    ble_lbs_front_write_handler_t front_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_nav_write_handler_t nav_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_direction_write_handler_t direction_write_handler;
+    ble_lbs_light_write_handler_t light_write_handler;
+    ble_lbs_blind_write_handler_t blind_write_handler;
 } ble_lbs_init_t;
 
-/**@brief LED Button Service structure. This structure contains various status information for the service. */
+/**@brief Bike Buddy Service structure. This structure contains various status information for the service. */
 struct ble_lbs_s
 {
-    uint16_t                    service_handle;      /**< Handle of LED Button Service (as provided by the BLE stack). */
-    ble_gatts_char_handles_t    led_char_handles;    /**< Handles related to the LED Characteristic. */
-    ble_gatts_char_handles_t    button_char_handles; /**< Handles related to the Button Characteristic. */
-    uint8_t                     uuid_type;           /**< UUID type for the LED Button Service. */
-    ble_lbs_front_write_handler_t front_write_handler;   /**< Event handler to be called when the LED Characteristic is written. */
+    uint16_t                    service_handle;      /**< Handle of Bike Buddy Service (as provided by the BLE stack). */
+    ble_gatts_char_handles_t    nav_char_handles;    
+    ble_gatts_char_handles_t    direction_char_handles; 
+    ble_gatts_char_handles_t    blind_char_handles;    
+    ble_gatts_char_handles_t    light_char_handles; 
+    ble_gatts_char_handles_t    back_char_handles;
+    uint8_t                     uuid_type;           /**< UUID type for the Bike Buddy Service. */
+    ble_lbs_nav_write_handler_t nav_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_direction_write_handler_t direction_write_handler;
+    ble_lbs_light_write_handler_t light_write_handler;
+    ble_lbs_blind_write_handler_t blind_write_handler;
 };
 
 
-/**@brief Function for initializing the LED Button Service.
+/**@brief Function for initializing the Bike Buddy Service.
  *
- * @param[out] p_lbs      LED Button Service structure. This structure must be supplied by
+ * @param[out] p_lbs      Bike Buddy Service structure. This structure must be supplied by
  *                        the application. It is initialized by this function and will later
  *                        be used to identify this particular service instance.
  * @param[in] p_lbs_init  Information needed to initialize the service.
@@ -133,10 +148,10 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init);
 
 /**@brief Function for handling the application's BLE stack events.
  *
- * @details This function handles all events from the BLE stack that are of interest to the LED Button Service.
+ * @details This function handles all events from the BLE stack that are of interest to the Bike Buddy Service.
  *
  * @param[in] p_ble_evt  Event received from the BLE stack.
- * @param[in] p_context  LED Button Service structure.
+ * @param[in] p_context  Bike Buddy Service structure.
  */
 void ble_lbs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 
@@ -144,7 +159,7 @@ void ble_lbs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 /**@brief Function for sending a button state notification.
  *
  ' @param[in] conn_handle   Handle of the peripheral connection to which the button state notification will be sent.
- * @param[in] p_lbs         LED Button Service structure.
+ * @param[in] p_lbs         Bike Buddy Service structure.
  * @param[in] button_state  New button state.
  *
  * @retval NRF_SUCCESS If the notification was sent successfully. Otherwise, an error code is returned.

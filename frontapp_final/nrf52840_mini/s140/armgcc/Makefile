@@ -56,7 +56,14 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/libraries/cli/nrf_cli.c \
   $(PROJ_DIR)/main.c \
-  $(PROJ_DIR)/tsl2561.c \
+  $(PROJ_DIR)/lib/ble_lbs.c \
+  $(PROJ_DIR)/lib/nav.c \
+  $(PROJ_DIR)/lib/trip.c \
+  $(PROJ_DIR)/lib/virtual_timer.c \
+  $(PROJ_DIR)/lib/virtual_timer_linked_list.c \
+  $(PROJ_DIR)/lib/tsl2561.c \
+  $(PROJ_DIR)/lib/buttons.c \
+  $(PROJ_DIR)/lib/lights.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -67,13 +74,13 @@ SRC_FILES += \
   $(SDK_ROOT)/components/ble/nrf_ble_gatt/nrf_ble_gatt.c \
   $(SDK_ROOT)/components/ble/nrf_ble_qwr/nrf_ble_qwr.c \
   $(SDK_ROOT)/external/utf_converter/utf.c \
-  $(SDK_ROOT)/components/ble/ble_services/ble_lbs/ble_lbs.c \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh.c \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh_ble.c \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh_soc.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
+  $(PROJ_DIR)/lib \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \
   $(SDK_ROOT)/components/nfc/t4t_parser/hl_detection_procedure \
@@ -229,6 +236,7 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
+CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)
@@ -246,6 +254,7 @@ ASMFLAGS += -DNRF52840_XXAA
 ASMFLAGS += -DNRF_SD_BLE_API_VERSION=7
 ASMFLAGS += -DS140
 ASMFLAGS += -DSOFTDEVICE_PRESENT
+ASMFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
 # Linker flags
 LDFLAGS += $(OPT)

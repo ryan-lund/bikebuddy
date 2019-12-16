@@ -32,8 +32,9 @@
 
 // Our Own Lib Files
 #include "buttons.h"
-#include "nav.h"
+#include "hall_effect.h"
 #include "front_peripherals.h"
+#include "nav.h"
 #include "trip.h"
 #include "tsl2561.h"
 #include "types.h"
@@ -41,8 +42,7 @@
 #include "lights.h"
 #include "nrf_drv_twi.h"
 
-// TODO: FIX ME
-#define HEADLIGHT_THRESHOLD  100
+#define HEADLIGHT_THRESHOLD  2200
 #define TURNLIGHT_POLAR_TURN_THRESHOLD  1234 // Righ is pos, left is neg
 #define BRAKELIGHT_DECEL_THRESHOLD  1234
 
@@ -314,9 +314,9 @@ int main(void)
     conn_params_init();
     // twi_init(); // IMPORTANT
     buttons_init(); // IMPORTANT
-    twi_init0();
-    twi_init1();
-    init_peripherals(&m_twi_master0, &m_twi_master1);
+    // twi_init0();
+    // twi_init1();
+    // init_peripherals(&m_twi_master0, &m_twi_master1);
     nrf_delay_ms(3000);
 
     // Start execution.
@@ -330,26 +330,19 @@ int main(void)
     double* gyro_z;
     // Enter main loop.
     while (true) {
-        // NRF_LOG_INFO("Main Loop");
-        // Display updates
-        // TODO: Replace fn with real one
-        // In fn make sure that it is in miles/hr
-        // display_update_speed();
+        NRF_LOG_INFO("Main Loop");
+        NRF_LOG_FLUSH();
 
         // FSM for Trip Details
         // ride_button_state = get_start_ride_button_state();
 
-        if (ble_connected) {
-            nrf_delay_ms(50);
+        // if (ble_connected) {
+        //     nrf_delay_ms(50);
 
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {
                     if (ride_button_state) {
-                        // Initalize trip variables
-                        start_time_rec();
-                        start_dist_rec();
-                        // start_elev_rec();
                         trip_state = ON;
                     }
                     break;
@@ -358,9 +351,6 @@ int main(void)
                 case ON: {
                     if (!ride_button_state) {
                         // Stop trip
-                        stop_time_rec();
-                        stop_dist_rec();
-                        // stop_elev_rec();
                         // TODO: Call function to change displays (format unknown)
                         // TODO: uint32_t get_time_elapsed(void) 
                         // TODO: float get_dist_traveled(void)
@@ -371,53 +361,51 @@ int main(void)
                 }
             }
 
-            roll = get_roll_degrees();
-            gyro_z = get_gyro_z();
-            if (*roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD) {
-                display_set_rightTurn(true);
-                //NRF_LOG_INFO("THRESH LEFT REACHED");
-            } else {
-                display_set_rightTurn(false);
-            }
-
-            if (*roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD) {
-                display_set_leftTurn(true);
-                //NRF_LOG_INFO("THRESH right REACHED");
-            } else {
-                display_set_leftTurn(false);
-            }
-
-
-            // // FSM for headlight
-            // tsl2561_lux = tsl2561_get_lux();
-            // NRF_LOG_INFO("%d",tsl2561_lux);
-            // switch (head_light_state) {
-            //     case OFF: {
-            //         // If LUX is below threshold
-            //         if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
-            //             // TURN LIGHT ON
-            //             toggle_headlight();
-            //             // TODO: toggle_taillight_char();
-            //             head_light_state = ON;
-            //         } else {
-            //             head_light_state = OFF;
-            //         }
-            //         break;
-            //     }
-
-            //     case ON: {
-            //         // If LUX is above threshold
-            //         if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
-            //             // TURN LIGHT OFF
-            //             toggle_headlight();
-            //             // TODO: toggle_taillight_char();
-            //             head_light_state = OFF;
-            //         } else {
-            //             head_light_state = ON;
-            //         }
-            //         break;
-            //     }
+            // roll = get_roll_degrees();
+            // gyro_z = get_gyro_z();
+            // if (*roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD) {
+            //     display_set_rightTurn(true);
+            //     //NRF_LOG_INFO("THRESH LEFT REACHED");
+            // } else {
+            //     display_set_rightTurn(false);
             // }
+
+            // if (*roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD) {
+            //     display_set_leftTurn(true);
+            //     //NRF_LOG_INFO("THRESH right REACHED");
+            // } else {
+            //     display_set_leftTurn(false);
+            // }
+
+            // FSM for headlight
+            tsl2561_lux = tsl2561_get_lux();
+            switch (head_light_state) {
+                case OFF: {
+                    // If LUX is below threshold
+                    if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
+                        // TURN LIGHT ON
+                        toggle_headlight();
+                        // TODO: toggle_taillight_char();
+                        head_light_state = ON;
+                    } else {
+                        head_light_state = OFF;
+                    }
+                    break;
+                }
+
+                case ON: {
+                    // If LUX is above threshold
+                    if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
+                        // TURN LIGHT OFF
+                        toggle_headlight();
+                        // TODO: toggle_taillight_char();
+                        head_light_state = OFF;
+                    } else {
+                        head_light_state = ON;
+                    }
+                    break;
+                }
+            }
 
             
 
@@ -540,11 +528,11 @@ int main(void)
                 }
             }
             NRF_LOG_FLUSH();
-        } else {
-            nrf_delay_ms(200);
-            NRF_LOG_INFO("Not connected to BLE yet");
-            NRF_LOG_FLUSH();
-        }
+        // } else {
+        //     nrf_delay_ms(200);
+        //     NRF_LOG_INFO("Not connected to BLE yet");
+        //     NRF_LOG_FLUSH();
+        // }
     }
 }
 

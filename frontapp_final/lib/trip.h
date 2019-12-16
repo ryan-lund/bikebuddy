@@ -1,24 +1,12 @@
 #pragma once
 #include "frontapp.h"
 
-void update_time(void);
+void set_time_elapsed(uint32_t time);
 
-void update_dist(void);
-
-void start_time_rec(void);
-
-void start_dist_rec(void);
-
-void start_elev_rec(void);
-
-void stop_time_rec(void);
-
-void stop_dist_rec(void);
-
-void stop_elev_rec(void);
+void set_dist_traveled(float distance);
 
 uint32_t get_time_elapsed(void);
 
 float get_dist_traveled(void);
 
-float get_elev_change(void);
+float get_avg_speed(void);

@@ -1,7 +1,5 @@
 #pragma once
 
-void update_distance_remaining(void);
-
 void nav_start(void);
 
 void nav_stop(void);

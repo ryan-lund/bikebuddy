@@ -42,6 +42,7 @@
 #include "lights.h"
 #include "nrf_drv_twi.h"
 
+// TODO
 #define HEADLIGHT_THRESHOLD  2200
 #define TURNLIGHT_POLAR_TURN_THRESHOLD  1234 // Righ is pos, left is neg
 #define BRAKELIGHT_DECEL_THRESHOLD  1234
@@ -51,6 +52,7 @@
 #define ANGLE_THRESHOLD 15
 
 #define BOARD_SPARKFUN_NRF52840_MINI    1
+#define PHOTORESISTOR_ADC_PIN NRF_SAADC_INPUT_AIN6
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -134,26 +136,17 @@ float distance;
 char distance_string[8];
 static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    NRF_LOG_INFO("distance");
-    memcpy(&distance, data, sizeof(distance));
-    NRF_LOG_HEXDUMP_INFO(data, 20);
-    NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
-    memcpy(&distance_string, data+4, sizeof(distance_string));
-    NRF_LOG_INFO("%s", distance_string);
+    // NRF_LOG_INFO("distance");
+    // memcpy(&distance, data, sizeof(distance));
+    // NRF_LOG_HEXDUMP_INFO(data, 20);
+    // NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    // memcpy(&distance_string, data+4, sizeof(distance_string));
+    // NRF_LOG_INFO("%s", distance_string);
     display_set_disttowp(distance_string);
 }
 
 static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    // distance = 11.32;
-    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
-    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
-    // memcpy(&distance, data, sizeof(distance));
-    // NRF_LOG_ERROR("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
-    // NRF_LOG_HEXDUMP_INFO(&distance, sizeof(distance));
-    // memcpy(direction_nav, data, sizeof(direction_nav));
-    // NRF_LOG_INFO("%s", direction_nav);
-    // TODO
     if (data[0] == 0) {
         display_set_direction(FRONT);
     } else if (data[0] == 1) {
@@ -240,38 +233,38 @@ static void twi_scan(void) {
 }
 
 // ADC SETUP
-// // callback for SAADC events
-// void saadc_callback (nrfx_saadc_evt_t const * p_event) {
-//   // don't care about adc callbacks
-// }
+// callback for SAADC events
+void saadc_callback (nrfx_saadc_evt_t const * p_event) {
+  // don't care about adc callbacks
+}
 
-// // sample a particular analog channel in blocking mode
-// nrf_saadc_value_t sample_value (uint8_t channel) {
-//   nrf_saadc_value_t val;
-//   ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
-//   APP_ERROR_CHECK(error_code);
-//   return val;
-// }
+// sample a particular analog channel in blocking mode
+nrf_saadc_value_t sample_value (uint8_t channel) {
+  nrf_saadc_value_t val;
+  ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
+  APP_ERROR_CHECK(error_code);
+  return val;
+}
 
-// static void adc_init(void) {
-//     ret_code_t error_code = NRF_SUCCESS;
-//     // initialize analog to digital converter
-//     nrfx_saadc_config_t saadc_config = NRFX_SAADC_DEFAULT_CONFIG;
-//     saadc_config.resolution = NRF_SAADC_RESOLUTION_12BIT;
-//     error_code = nrfx_saadc_init(&saadc_config, saadc_callback);
-//     APP_ERROR_CHECK(error_code);
+static void adc_init(void) {
+    ret_code_t error_code = NRF_SUCCESS;
+    // initialize analog to digital converter
+    nrfx_saadc_config_t saadc_config = NRFX_SAADC_DEFAULT_CONFIG;
+    saadc_config.resolution = NRF_SAADC_RESOLUTION_12BIT;
+    error_code = nrfx_saadc_init(&saadc_config, saadc_callback);
+    APP_ERROR_CHECK(error_code);
 
-//     // initialize analog inputs
-//     // configure with 0 as input pin for now
-//     nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(0);
-//     channel_config.gain = NRF_SAADC_GAIN1_6; // input gain of 1/6 Volts/Volt, multiply incoming signal by (1/6)
-//     channel_config.reference = NRF_SAADC_REFERENCE_INTERNAL; // 0.6 Volt reference, input after gain can be 0 to 0.6 Volts
+    // initialize analog inputs
+    // configure with 0 as input pin for now
+    nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(0);
+    channel_config.gain = NRF_SAADC_GAIN1_6; // input gain of 1/6 Volts/Volt, multiply incoming signal by (1/6)
+    channel_config.reference = NRF_SAADC_REFERENCE_INTERNAL; // 0.6 Volt reference, input after gain can be 0 to 0.6 Volts
 
-//     // specify input pin and initialize that ADC channel
-//     channel_config.pin_p = BUCKLER_ANALOG_ACCEL_X;
-//     error_code = nrfx_saadc_channel_init(X_CHANNEL, &channel_config);
-//     APP_ERROR_CHECK(error_code);
-// }
+    // specify input pin and initialize that ADC channel
+    channel_config.pin_p = PHOTORESISTOR_ADC_PIN;
+    error_code = nrfx_saadc_channel_init(0, &channel_config);
+    APP_ERROR_CHECK(error_code);
+}
 
 // Configuring initial states
 general_state_t trip_state = OFF;
@@ -302,6 +295,7 @@ int main(void)
     leds_init();
     lights_init();
     timers_init();
+    adc_init();
     // init_lights_front();
     // init_lights_back();
     virtual_timer_init();
@@ -328,6 +322,11 @@ int main(void)
 
     double* roll;
     double* gyro_z;
+    bool left_turn = false;
+    bool right_turn = false;
+    bool intended_left = false;
+    bool intended_right =  false;
+    nrf_saadc_value_t light_val = 0;
     // Enter main loop.
     while (true) {
         NRF_LOG_INFO("Main Loop");
@@ -337,8 +336,7 @@ int main(void)
         // ride_button_state = get_start_ride_button_state();
 
         // if (ble_connected) {
-        //     nrf_delay_ms(50);
-
+        //     nrf_delay_ms(100);
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {
@@ -361,14 +359,39 @@ int main(void)
                 }
             }
 
-            // roll = get_roll_degrees();
-            // gyro_z = get_gyro_z();
-            // if (*roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD) {
-            //     display_set_rightTurn(true);
-            //     //NRF_LOG_INFO("THRESH LEFT REACHED");
-            // } else {
-            //     display_set_rightTurn(false);
-            // }
+            roll = get_roll_degrees();
+            gyro_z = get_gyro_z();
+            intended_right = *roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD;
+
+            if (intended_right != right_turn) {
+                if (intended_right) {
+                    display_set_rightTurn(true);
+                    right_turn = true;
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+                    NRF_LOG_INFO("THRESH RIGHT REACHED");
+                } else {
+                    NRF_LOG_INFO("RIGHT CANCELLED");
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+                    display_set_rightTurn(false);
+                    right_turn = false;
+                } 
+            }
+
+            intended_left = *roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD;
+            
+            if (intended_left != left_turn) {
+                if (intended_left) {
+                    display_set_leftTurn(true);
+                    left_turn = true;
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
+                    NRF_LOG_INFO("THRESH LEFT REACHED");
+                } else {
+                    NRF_LOG_INFO("LEFT CANCELLED");
+                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
+                    display_set_leftTurn(false);
+                    left_turn = false;
+                }
+            }
 
             // if (*roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD) {
             //     display_set_leftTurn(true);
@@ -378,16 +401,19 @@ int main(void)
             // }
 
             // FSM for headlight
-            tsl2561_lux = tsl2561_get_lux();
+            light_val = sample_value(0);
+            NRF_LOG_INFO("LIGHT: %d", light_val);
             switch (head_light_state) {
                 case OFF: {
                     // If LUX is below threshold
-                    if (tsl2561_lux < HEADLIGHT_THRESHOLD) {
+                    if (light_val < HEADLIGHT_THRESHOLD) {
                         // TURN LIGHT ON
                         toggle_headlight();
+                        NRF_LOG_INFO("TURNING LIGHT ON");
                         // TODO: toggle_taillight_char();
                         head_light_state = ON;
                     } else {
+                        NRF_LOG_INFO("KEEPING LIGHT OFF");
                         head_light_state = OFF;
                     }
                     break;
@@ -395,12 +421,14 @@ int main(void)
 
                 case ON: {
                     // If LUX is above threshold
-                    if (tsl2561_lux > HEADLIGHT_THRESHOLD) {
+                    if (light_val > HEADLIGHT_THRESHOLD) {
                         // TURN LIGHT OFF
                         toggle_headlight();
+                        NRF_LOG_INFO("TURNING LIGHT OFF");
                         // TODO: toggle_taillight_char();
                         head_light_state = OFF;
                     } else {
+                        NRF_LOG_INFO("KEEPING LIGHT ON");
                         head_light_state = ON;
                     }
                     break;

@@ -43,14 +43,16 @@ def get_directions(start, end):
     return turn_by_turn
 
 class BikeBuddyDelegate(btle.DefaultDelegate):
-    def __init__(self):
+    def __init__(self, back_backlight_char):
         btle.DefaultDelegate.__init__(self)
         # ... initialise here
+        self.back_backlight_char = back_backlight_char;
 
     def handleNotification(self, cHandle, data):
         # ... perhaps check cHandle
         # ... process 'data'
         print(data)
+        self.back_backlight_char.write(data)
         return
 
 def connect_bikebuddy_module(MAC_ADDR):
@@ -66,7 +68,6 @@ if __name__ == "__main__":
 
     print("Connecting to Front Module...")
     front_p = connect_bikebuddy_module(FRONT_MAC)
-    front_p.setDelegate(BikeBuddyDelegate())
     print("Connected to Front Module!")
 
     print("Connecting to Back Module...")
@@ -102,29 +103,34 @@ if __name__ == "__main__":
     back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
     print(back_backlight_char)
 
+    front_p.setDelegate(BikeBuddyDelegate(back_backlight_char))
+
     try:
         while True:
-            # print("waiting")
+            # print("waiting for notification")
             # front_ctrl_char.write(bytes.fromhex('01'))
-            # while front_p.waitForNotifications(0.5):
-            #     print("got notification")
-            # value = input("which:\n")
-            # if value == 'BS':
-            #     value = input("enter value:\n")
-            #     front_blind_char.write(bytes.fromhex('{0}'.format(value)))
-            # if value == 'NAV':
-            #     value = input("enter value:\n")
-            #     front_nav_char.write(bytes(value, 'utf-8'))
-            # if value == 'DIST':
-            #     distance_float = input("enter float:\n")
-            #     distance_string = input("enter string: \n")
-            #     front_distance_char.write(bytes.fromhex(float_to_hex(float(distance_float))) + bytes(distance_string, 'utf-8'))         
-            # if value == 'DIR':
-            #     value = input("enter value:\n")
-            #     front_direction_char.write(bytes.fromhex('{0}'.format(value)))
-            value = input("Enter Value:\n")
-            back_backlight_char.write(bytes.fromhex(value))
+            # time.sleep(0.1)
+            # print(front_back_char.read())
+            # back_backlight_char.write(front_back_char.read())
 
+            value = input("which:\n")
+            if value == 'BS':
+                value = input("enter value:\n")
+                front_blind_char.write(bytes.fromhex('{0}'.format(value)))
+            if value == 'NAV':
+                value = input("enter value:\n")
+                front_nav_char.write(bytes(value, 'utf-8'))
+            if value == 'DIST':
+                distance_float = input("enter float:\n")
+                distance_string = input("enter string: \n")
+                front_distance_char.write(bytes.fromhex(float_to_hex(float(distance_float))) + bytes(distance_string, 'utf-8'))         
+            if value == 'DIR':
+                value = input("enter value:\n")
+                front_direction_char.write(bytes.fromhex('{0}'.format(value)))
+            value = input("Enter Value:\n")
+            # back_backlight_char.write(bytes.fromhex(value))
+    except Exception as e:
+        print(e)
     finally:
         front_p.disconnect()
         back_p.disconnect()

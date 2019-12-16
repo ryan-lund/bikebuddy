@@ -12,8 +12,9 @@ HEADERS = {
 
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
 # FRONT_MAC = "F5:0C:E1:0F:07:24"
-FRONT_MAC = "D3:F1:86:3C:AA:E0"
-BACK_MAC = "F9:CB:0F:79:E8:BB"
+# FRONT_MAC = "D3:F1:86:3C:AA:E0"
+# BACK_MAC = "F9:CB:0F:79:E8:BB"
+BACK_MAC = "D3:F1:86:3C:AA:E0"
 
 def get_geocode(location):
     address, city, state = location.split('-')
@@ -59,6 +60,12 @@ def connect_bikebuddy_module(MAC_ADDR):
 def float_to_hex(f):
     return hex(struct.unpack('>I', struct.pack('<f', f))[0])[2:].zfill(8)
 
+def hex_to_float(h):
+    return struct.unpack('>f', h)[0].round(2)
+
+def hex_to_int(h):
+    return struct.unpack('>i', h)[0]
+
 
 if __name__ == "__main__":
     # print("Getting directions")
@@ -102,6 +109,9 @@ if __name__ == "__main__":
     back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
     print(back_backlight_char)
 
+    back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print(back_speeddistance_char)
+
     try:
         while True:
             # print("waiting")
@@ -122,8 +132,10 @@ if __name__ == "__main__":
             # if value == 'DIR':
             #     value = input("enter value:\n")
             #     front_direction_char.write(bytes.fromhex('{0}'.format(value)))
-            value = input("Enter Value:\n")
-            back_backlight_char.write(bytes.fromhex(value))
+            # value = input("Enter Value:\n")
+            # back_backlight_char.write(bytes.fromhex(value))
+            time.sleep(0.5)
+            print(back_speeddistance_char.read().hex())
 
     finally:
         # front_p.disconnect()

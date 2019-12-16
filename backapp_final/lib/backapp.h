@@ -17,7 +17,14 @@
 
 #define LEFT_PIN 30
 #define RIGHT_PIN 31
-#define TAIL_PIN 10
+#define TAIL_PIN 23
 #define BRAKE_PIN 3
+
+/* Defines for Hall Effect Driver */
+#define HALL_EFFECT_VARS
+
+#define HALL_EFFECT_PIN 20
+#define HALL_EFFECT_WHEEL_CIRCUMFERENCE 2105 // wheel circumference in mm
+#define HALL_EFFECT_NUM_MAGNETS 1 // number of magnets on the wheel
 
 #define FLASH_INTERVAL 500000

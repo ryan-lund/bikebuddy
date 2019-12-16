@@ -11,7 +11,8 @@ HEADERS = {
 }
 
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
-FRONT_MAC = "F5:0C:E1:0F:07:24"
+# FRONT_MAC = "F5:0C:E1:0F:07:24"
+FRONT_MAC = "D3:F1:86:3C:AA:E0"
 
 def get_geocode(location):
     address, city, state = location.split('-')
@@ -95,24 +96,25 @@ if __name__ == "__main__":
     # byte allocation distance (4), direction (1), rest (15)
 
 
-    front_nav_char.write(bytes.fromhex('01'))
-    front_nav_char.write(bytes.fromhex('00'))
-    front_direction_char.write(bytes.fromhex('01'))
-    front_direction_char.write(bytes.fromhex('00'))
-    front_light_char.write(bytes.fromhex('01'))
-    front_light_char.write(bytes.fromhex('00'))
-    front_blind_char.write(bytes.fromhex('01'))
-    front_blind_char.write(bytes.fromhex('00'))
+    # front_nav_char.write(bytes.fromhex('01'))
+    # front_nav_char.write(bytes.fromhex('00'))
+    # front_direction_char.write(bytes.fromhex('01'))
+    # front_direction_char.write(bytes.fromhex('00'))
+    # front_light_char.write(bytes.fromhex('01'))
+    # front_light_char.write(bytes.fromhex('00'))
+    # front_blind_char.write(bytes.fromhex('01'))
+    # front_blind_char.write(bytes.fromhex('00'))
     try:
         while True:
-            print("waiting")
+            # print("waiting")
             # front_ctrl_char.write(bytes.fromhex('01'))
-            while front_p.waitForNotifications(0.5):
-                print("got notification")
+            # while front_p.waitForNotifications(0.5):
+            #     print("got notification")
             value = input("Enter value to module:\n")
             # # print(bytes.fromhex(float_to_hex(float(value))))
             # # front_ctrl_char.write(bytes.fromhex(float_to_hex(float(value))))
-            front_direction_char.write(bytes.fromhex('{0}'.format(value)))
+            # front_blind_char.write(bytes.fromhex('{0}'.format(value)))
+            # front_direction_char.write(bytes.fromhex('{0}'.format(value)))
     finally:
         front_p.disconnect()
     front_p.disconnect()

@@ -34,6 +34,7 @@
 #include "types.h"
 #include "virtual_timer.h"
 #include "lights.h"
+#include "nrf_drv_twi.h"
 
 // TODO: FIX ME
 #define HEADLIGHT_THRESHOLD  100
@@ -51,7 +52,52 @@ NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 volatile bool _twi_init = false;
 
 /* TWI instance. */
-const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
+
+#define SSD1306_CONFIG_VDD_PIN 04
+#define SSD1306_CONFIG_SCL_PIN_0 05
+#define SSD1306_CONFIG_SDA_PIN_0 28
+#define SSD1306_CONFIG_SCL_PIN_1 29
+#define SSD1306_CONFIG_SDA_PIN_1 31
+nrf_drv_twi_t m_twi_master0 = NRF_DRV_TWI_INSTANCE(0);
+nrf_drv_twi_t m_twi_master1 = NRF_DRV_TWI_INSTANCE(1);
+/**
+ * @brief TWI initialization.
+ */
+void twi_init0 (void)
+{
+        ret_code_t err_code;
+
+        const nrf_drv_twi_config_t twi_sensors_config = {
+                .scl                = SSD1306_CONFIG_SCL_PIN_0,
+                .sda                = SSD1306_CONFIG_SDA_PIN_0,
+                .frequency          = NRF_TWI_FREQ_400K,
+                .interrupt_priority = APP_IRQ_PRIORITY_LOWEST
+        };
+
+        //err_code = nrf_drv_twi_init(&m_twi_lis2dh12, &twi_lis2dh12_config, twi_handler, NULL);
+        err_code = nrf_drv_twi_init(&m_twi_master0, &twi_sensors_config, NULL, NULL);    // twi in blocking mode.
+        APP_ERROR_CHECK(err_code);
+
+        nrf_drv_twi_enable(&m_twi_master0);
+}
+
+void twi_init1 (void)
+{
+        ret_code_t err_code;
+
+        const nrf_drv_twi_config_t twi_sensors_config = {
+                .scl                = SSD1306_CONFIG_SCL_PIN_1,
+                .sda                = SSD1306_CONFIG_SDA_PIN_1,
+                .frequency          = NRF_TWI_FREQ_400K,
+                .interrupt_priority = APP_IRQ_PRIORITY_LOWEST
+        };
+
+        //err_code = nrf_drv_twi_init(&m_twi_lis2dh12, &twi_lis2dh12_config, twi_handler, NULL);
+        err_code = nrf_drv_twi_init(&m_twi_master1, &twi_sensors_config, NULL, NULL);    // twi in blocking mode.
+        APP_ERROR_CHECK(err_code);
+
+        nrf_drv_twi_enable(&m_twi_master1);
+}
 
 
 static void nav_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
@@ -151,26 +197,6 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-void twi_init(void) {
-  ret_code_t err_code;
-
-  //NRF_LOG_INFO("STARTING TWI INIT");
-
-  const nrf_drv_twi_config_t twi_config = {
-    .scl                = 4,
-    .sda                = 5,
-    .frequency          = NRF_TWI_FREQ_400K,
-  };
-
-  //err_code = nrf_drv_twi_init(&twi_instance, &twi_config, NULL, NULL);
-  //APP_ERROR_CHECK(err_code);
-
-  err_code = nrf_twi_mngr_init(&twi_mngr_instance, &twi_config);
-  APP_ERROR_CHECK(err_code);
-
-  _twi_init = true;
-}
-
 static void twi_scan(void) {
   ret_code_t err_code;
   uint8_t address;
@@ -245,6 +271,9 @@ int main(void)
     conn_params_init();
     twi_init(); // IMPORTANT
     buttons_init(); // IMPORTANT
+    twi_init0()
+    twi_init1()
+    init_peripherals(&m_twi_master0, &m_twi_master1);
     nrf_delay_ms(3000);
 
     // Start execution.

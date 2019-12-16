@@ -53,9 +53,9 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
-#define BRAKE_LED 4
-#define RIGHT_LED 28
-#define LEFT_LED 30
+#define BRAKE_LED 30
+#define RIGHT_LED 31
+#define LEFT_LED 3
 BLE_LBS_DEF(m_lbs);                                                             /**< LED Button Service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/

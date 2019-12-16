@@ -34,16 +34,16 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t *
 {
     if (led_state[0] == 1)
     {
-        // toggle_brakelight();
+        toggle_brakelight();
         NRF_LOG_INFO("Recieved toggle to brakelight!");
     } else if (led_state[0] == 2) {
-        // toggle_flash_left();
+        toggle_flash_left();
         NRF_LOG_INFO("Recieved toggle to left indicator!");
     } else if (led_state[0] == 3) {
-        // toggle_flash_right();
+        toggle_flash_right();
         NRF_LOG_INFO("Recieved toggle to right indicator!");
     } else if (led_state[0] == 4) {
-        // toggle_taillight();
+        toggle_taillight();
         NRF_LOG_INFO("Recieved toggle to taillight");
     } else {
         NRF_LOG_INFO("Recieved toggle for nothing");

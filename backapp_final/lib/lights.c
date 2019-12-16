@@ -9,6 +9,8 @@
 int left_timer_id = 0;
 int right_timer_id = 0;
 
+bool _left = 0;
+bool _right = 0;
 void lights_init(void) {
 	// configure pins as outputs
 	// 4: left

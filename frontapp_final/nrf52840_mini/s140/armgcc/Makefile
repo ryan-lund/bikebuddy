@@ -242,7 +242,7 @@ CFLAGS += -DS140
 CFLAGS += -DSOFTDEVICE_PRESENT
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
-CFLAGS += -Wall -Werror -Wno-unused-variable -Wno-int-to-pointer-cast -Wno-unused-function -Wno-unused-function -Wno-misleading-indentation -Wno-pointer-compare -Wno-error=unused-variable -Wno-unused-function -Wno-incompatible-pointer-types
+CFLAGS += -Wall -Werror -Wno-unused-variable -Wno-int-to-pointer-cast -Wno-unused-function -Wno-unused-function -Wno-misleading-indentation -Wno-pointer-compare -Wno-error=unused-variable -Wno-unused-function -Wno-incompatible-pointer-types -Wno-unused-value
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing

@@ -61,41 +61,41 @@ def float_to_hex(f):
 
 
 if __name__ == "__main__":
-    print("Getting directions")
+    # print("Getting directions")
     # directions = get_directions('24'
 
-    print("Connecting to Front Module...")
-    front_p = connect_bikebuddy_module(FRONT_MAC)
-    front_p.setDelegate(BikeBuddyDelegate())
-    print("Connected to Front Module!")
+    # print("Connecting to Front Module...")
+    # front_p = connect_bikebuddy_module(FRONT_MAC)
+    # front_p.setDelegate(BikeBuddyDelegate())
+    # print("Connected to Front Module!")
 
     print("Connecting to Back Module...")
     back_p = connect_bikebuddy_module(BACK_MAC)
     print("Connected to Back Module!")
     # Set up services and characteristics
 
-    front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    print(front_nav_char)
-    # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
+    # front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    # front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    # print(front_nav_char)
+    # # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
+    # # desc.write(bytes.fromhex('0100'))
+
+    # front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    # print(front_direction_char)
+
+    # front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    # print(front_blind_char)
+
+    # front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
+    # print(front_light_char)
+
+    # front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    # print(front_distance_char)
+
+    # front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
+    # print(front_back_char)
+    # desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
     # desc.write(bytes.fromhex('0100'))
-
-    front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    print(front_direction_char)
-
-    front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    print(front_blind_char)
-
-    front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
-    print(front_light_char)
-
-    front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
-    print(front_distance_char)
-
-    front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
-    print(front_back_char)
-    desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
-    desc.write(bytes.fromhex('0100'))
 
 
     back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
@@ -126,7 +126,7 @@ if __name__ == "__main__":
             back_backlight_char.write(bytes.fromhex(value))
 
     finally:
-        front_p.disconnect()
+        # front_p.disconnect()
         back_p.disconnect()
-    front_p.disconnect()
+    # front_p.disconnect()
     back_p.disconnect()

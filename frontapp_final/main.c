@@ -28,6 +28,7 @@
 // Our Own Lib Files
 #include "buttons.h"
 #include "nav.h"
+#include "front_peripherals.h"
 #include "trip.h"
 #include "tsl2561.h"
 #include "types.h"
@@ -269,7 +270,7 @@ int main(void)
                         // Initalize trip variables
                         start_time_rec();
                         start_dist_rec();
-                        start_elev_rec();
+                        // start_elev_rec();
                         trip_state = ON;
                     }
                     break;
@@ -280,7 +281,7 @@ int main(void)
                         // Stop trip
                         stop_time_rec();
                         stop_dist_rec();
-                        stop_elev_rec();
+                        // stop_elev_rec();
                         // TODO: Call function to change displays (format unknown)
                         // TODO: uint32_t get_time_elapsed(void) 
                         // TODO: float get_dist_traveled(void)
@@ -336,14 +337,14 @@ int main(void)
                     if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
                         // If current polar_acceleration pass threshold (negative for left)
                         toggle_flash_left();
+                        display_set_leftTurn(true);
                         // TODO: sendtoggle_rearturn_left_char();
-                        // TODO: Toggle display left turn
                         turn_light_state = TURN_LEFT;
                     } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                         // If current polar_acceleration pass threshold (negative for left)
                         toggle_flash_right();
+                        display_set_rightTurn(true);
                         // TODO: sendtoggle_rearturn_right_char();
-                        // TODO: Toggle display right turn
                         turn_light_state = TURN_RIGHT;
                     } else {
                         turn_light_state = TURN_OFF;
@@ -359,19 +360,19 @@ int main(void)
                         // If current polar_acceleration pass threshold (negative for left)
                         // First toggle left
                         toggle_flash_left();
+                        display_set_leftTurn(false);
                         // TODO: sendtoggle_rearturn_left_char();
-                        // TODO: Toggle display left turn
 
                         // Then toggle right
                         toggle_flash_right();
+                        display_set_rightTurn(true);
                         // TODO: sendtoggle_rearturn_right_char();
-                        // TODO: Toggle display right turn
                         turn_light_state = TURN_RIGHT;
                     } else {
                         // If no longer turning, toggle lights off
                         toggle_flash_left();
+                        display_set_leftTurn(false);
                         // TODO: sendtoggle_rearturn_left_char();
-                        // TODO: Toggle display left turn
                         turn_light_state = TURN_OFF;
                     }
                     break;
@@ -382,13 +383,14 @@ int main(void)
                         // If current polar_acceleration pass threshold (negative for left)
                         // First  toggle right
                         toggle_flash_right();
+                        display_set_rightTurn(false);
                         // TODO: sendtoggle_rearturn_right_char();
                         // TODO: Toggle display right turn
 
                         // Then toggle left
                         toggle_flash_left();
+                        display_set_leftTurn(true);
                         // TODO: sendtoggle_rearturn_left_char();
-                        // TODO: Toggle display left turn
                         turn_light_state = TURN_LEFT;
                     } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
                         // Do nothing
@@ -396,8 +398,8 @@ int main(void)
                     } else {
                         // If no longer turning, toggle lights off
                         toggle_flash_right();
+                        display_set_rightTurn(false);
                         // TODO: sendtoggle_rearturn_right_char();
-                        // TODO: Toggle display right turn
                         turn_light_state = TURN_OFF;
                     }
                     break;

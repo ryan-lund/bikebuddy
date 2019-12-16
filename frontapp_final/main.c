@@ -278,15 +278,15 @@ int main(void)
         // FSM for turnlights.
         // TODO: Replace fn with real one
         // polar_accel = bno055_get_polar_acceleration();
-        uint32_t polar_accel = 0;
+        float polar_accel = 0;
         // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
-        switch_state_left = nrf_gpio_pin_read(9);
-        switch_state_right = nrf_gpio_pin_read(10);
+        switch_state_left = get_left_turn_button_state();
+        switch_state_right = get_right_turn_button_state();
         // switch_state_right = false;
         // switch_state_left = false;
         switch (turn_light_state) {
             case TURN_OFF: {
-                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < (0-TURNLIGHT_POLAR_TURN_THRESHOLD))) {
                     // If current polar_acceleration pass threshold (negative for left)
                     toggle_flash_left();
                     // TODO: sendtoggle_rearturn_left_char();
@@ -305,7 +305,7 @@ int main(void)
             }
 
             case TURN_LEFT: {
-                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < (0-TURNLIGHT_POLAR_TURN_THRESHOLD))) {
                     // Do nothing
                     turn_light_state = TURN_LEFT;
                 } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
@@ -331,7 +331,7 @@ int main(void)
             }
 
             case TURN_RIGHT: {
-                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
+                if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < (0-TURNLIGHT_POLAR_TURN_THRESHOLD))) {
                     // If current polar_acceleration pass threshold (negative for left)
                     // First  toggle right
                     toggle_flash_right();

@@ -568,7 +568,7 @@ void twi_init(void) {
   const nrf_drv_twi_config_t twi_config = {
     .scl                = ARDUINO_SCL_PIN,
     .sda                = ARDUINO_SDA_PIN,
-    .frequency          = NRF_TWI_FREQ_100K,
+    .frequency          = NRF_TWI_FREQ_400K,
   };
 
   //err_code = nrf_drv_twi_init(&twi_instance, &twi_config, NULL, NULL);
@@ -650,16 +650,16 @@ int main(void)
     twi_init(); // IMPORTANT: COMES SECOND
     buttons_init();
     hall_effect_init();
+    NRF_LOG_INFO("Front App Started.");
+    NRF_LOG_FLUSH();
     nrf_delay_ms(3000);
 
     // Start execution.
-    NRF_LOG_INFO("Front App Started.");
-    NRF_LOG_FLUSH();
 
     advertising_start();
-    twi_scan();
+    //twi_scan();
     bmp085_init(&twi_mngr_instance);
-    uint32_t bmp085_temp = bmp085_getTemperature();
+    //uint32_t bmp085_temp = bmp085_getTemperature();
     // Enter main loop.
 
     //uint32_t bmp085_temp = 0;

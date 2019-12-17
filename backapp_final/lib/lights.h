@@ -20,6 +20,8 @@ void set_right(bool set_val);
 
 void set_brake(bool set_val);
 
+void set_tail(bool set_val);
+
 void toggle_right(void);
 
 void toggle_flash_left(void);

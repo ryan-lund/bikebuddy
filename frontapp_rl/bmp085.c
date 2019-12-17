@@ -148,17 +148,17 @@ unsigned short bmp085_readUT(){
 void bmp085_calibration()
 {
 	NRF_LOG_INFO("Calibrating BMP085");
-	ac1 = bmp085ReadShort(0xAA);
-	ac2 = bmp085ReadShort(0xAC);
+	//ac1 = bmp085ReadShort(0xAA);
+	/*ac2 = bmp085ReadShort(0xAC);
 	ac3 = bmp085ReadShort(0xAE);
 	ac4 = bmp085ReadShort(0xB0);
 	ac5 = bmp085ReadShort(0xB2);
 	ac6 = bmp085ReadShort(0xB4);
-	b1 = bmp085ReadShort(0xB6);
-	b2 = bmp085ReadShort(0xB8);
+	b1 = bmp085ReadShort(0xB6);*/
+	b2 = bmp085ReadShort(0xAA); // B8
 	//mb = bmp085ReadShort(0xBA);
-	mc = bmp085ReadShort(0xBC);
-	md = bmp085ReadShort(0xBE);
+	/*mc = bmp085ReadShort(0xBC);
+	md = bmp085ReadShort(0xBE);*/
 	NRF_LOG_INFO("Calibration complete.");
 }
 

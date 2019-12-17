@@ -32,7 +32,6 @@
 
 // Our Own Lib Files
 #include "buttons.h"
-#include "hall_effect.h"
 #include "front_peripherals.h"
 #include "nav.h"
 #include "trip.h"
@@ -111,24 +110,28 @@ void twi_init1 (void)
 }
 
 
-char direction_nav[20];
-static void nav_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
+char street_string[20];
+static void street_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    memcpy(direction_nav, data, sizeof(direction_nav));
-    NRF_LOG_INFO("%s", direction_nav);
+    memcpy(street_string, data, sizeof(street_string));
+    NRF_LOG_INFO("%s", street_string);
     display_set_street((char *)data);
 }
 
 static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
     if (data[0] == 0) {
-        display_set_leftBS(true);
-    } else if (data[0] == 1) {
         display_set_leftBS(false);
+        display_set_rightBS(false);
+    } else if (data[0] == 1) {
+        display_set_leftBS(true);
+        display_set_rightBS(false);
     } else if (data[0] == 2) {
+        display_set_leftBS(false);
         display_set_rightBS(true);
     } else if (data[0] == 3) {
-        display_set_rightBS(false);
+        display_set_leftBS(true);
+        display_set_rightBS(true);
     }
 }
 
@@ -136,12 +139,6 @@ float distance;
 char distance_string[8];
 static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    // NRF_LOG_INFO("distance");
-    // memcpy(&distance, data, sizeof(distance));
-    // NRF_LOG_HEXDUMP_INFO(data, 20);
-    // NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
-    // memcpy(&distance_string, data+4, sizeof(distance_string));
-    // NRF_LOG_INFO("%s", distance_string);
     display_set_disttowp(distance_string);
 }
 
@@ -162,14 +159,11 @@ static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uin
 
 static void light_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 1)
-    {
-        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+    if (data[0] == 1) {
+        ble_send_backlight_command(m_conn_handle, &m_lbs, 4);
         NRF_LOG_INFO("Navigation Enabled");
-    }
-    else 
-    {
-        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+    } else {
+        ble_send_backlight_command(m_conn_handle, &m_lbs, 5);
         NRF_LOG_HEXDUMP_INFO(data, 32);
     }
 }
@@ -187,7 +181,7 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 
     // Initialize LBS.
-    init.nav_write_handler = nav_write_handler;
+    init.street_write_handler = street_write_handler;
     init.direction_write_handler = direction_write_handler;
     init.distance_write_handler = distance_write_handler;
     init.blind_write_handler = blind_write_handler;
@@ -239,7 +233,7 @@ void saadc_callback (nrfx_saadc_evt_t const * p_event) {
 }
 
 // sample a particular analog channel in blocking mode
-nrf_saadc_value_t sample_value (uint8_t channel) {
+nrf_saadc_value_t sample_photoresistor_value (uint8_t channel) {
   nrf_saadc_value_t val;
   ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
   APP_ERROR_CHECK(error_code);
@@ -306,19 +300,16 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    // twi_init(); // IMPORTANT
     buttons_init(); // IMPORTANT
-    // twi_init0();
-    // twi_init1();
-    // init_peripherals(&m_twi_master0, &m_twi_master1);
+    twi_init0();
+    twi_init1();
+    init_peripherals(&m_twi_master0, &m_twi_master1);
     nrf_delay_ms(3000);
 
     // Start execution.
     NRF_LOG_INFO("Front App Started.");
     advertising_start();
     NRF_LOG_FLUSH();
-    // twi_scan();
-    // tsl2561_init(&twi_mngr_instance);
 
     double* roll;
     double* gyro_z;
@@ -335,8 +326,8 @@ int main(void)
         // FSM for Trip Details
         // ride_button_state = get_start_ride_button_state();
 
-        // if (ble_connected) {
-        //     nrf_delay_ms(100);
+        if (ble_connected) {
+            nrf_delay_ms(100);
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {
@@ -367,11 +358,11 @@ int main(void)
                 if (intended_right) {
                     display_set_rightTurn(true);
                     right_turn = true;
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+                    ble_send_backlight_command(m_conn_handle, &m_lbs, 4);
                     NRF_LOG_INFO("THRESH RIGHT REACHED");
                 } else {
                     NRF_LOG_INFO("RIGHT CANCELLED");
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+                    ble_send_backlight_command(m_conn_handle, &m_lbs, 5);
                     display_set_rightTurn(false);
                     right_turn = false;
                 } 
@@ -383,11 +374,11 @@ int main(void)
                 if (intended_left) {
                     display_set_leftTurn(true);
                     left_turn = true;
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
+                    ble_send_backlight_command(m_conn_handle, &m_lbs, 2);
                     NRF_LOG_INFO("THRESH LEFT REACHED");
                 } else {
                     NRF_LOG_INFO("LEFT CANCELLED");
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
+                    ble_send_backlight_command(m_conn_handle, &m_lbs, 3);
                     display_set_leftTurn(false);
                     left_turn = false;
                 }
@@ -401,7 +392,7 @@ int main(void)
             // }
 
             // FSM for headlight
-            light_val = sample_value(0);
+            light_val = sample_photoresistor_value(0);
             NRF_LOG_INFO("LIGHT: %d", light_val);
             switch (head_light_state) {
                 case OFF: {
@@ -556,11 +547,11 @@ int main(void)
                 }
             }
             NRF_LOG_FLUSH();
-        // } else {
-        //     nrf_delay_ms(200);
-        //     NRF_LOG_INFO("Not connected to BLE yet");
-        //     NRF_LOG_FLUSH();
-        // }
+        } else {
+            nrf_delay_ms(200);
+            NRF_LOG_INFO("Not connected to BLE yet");
+            NRF_LOG_FLUSH();
+        }
     }
 }
 

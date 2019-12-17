@@ -16,6 +16,7 @@
 const float m_per_tick = ((float) HALL_EFFECT_WHEEL_CIRCUMFERENCE) / (HALL_EFFECT_NUM_MAGNETS * 1000);
 
 volatile float dist = 0.0f;
+volatile float last_dist = 0.0f;
 volatile float speed = 0.0f;
 volatile uint32_t last_start = 0;
 volatile uint32_t time_elapsed = 0;
@@ -76,6 +77,10 @@ float hall_effect_get_dist(void) {
 
 // returns last seen speed in km/hr
 float hall_effect_get_speed(void) {
+    if ((double) last_dist == (double) dist) {
+        return 0.0f;
+    }
+    last_dist = dist;
 	return speed;
 }
 

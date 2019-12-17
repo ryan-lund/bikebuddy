@@ -32,7 +32,6 @@
 
 // Our Own Lib Files
 #include "buttons.h"
-#include "hall_effect.h"
 #include "front_peripherals.h"
 #include "nav.h"
 #include "trip.h"
@@ -42,22 +41,18 @@
 #include "lights.h"
 #include "nrf_drv_twi.h"
 
-// TODO
+// Defines for sensor thresholds
 #define HEADLIGHT_THRESHOLD  2200
-#define TURNLIGHT_POLAR_TURN_THRESHOLD  1234 // Righ is pos, left is neg
-#define BRAKELIGHT_DECEL_THRESHOLD  1234
-
 
 #define GYROZ_THRESHOLD 300
 #define ANGLE_THRESHOLD 15
+
+#define NAV_AUTOMATIC_TURN_DISTANCE 10
 
 #define BOARD_SPARKFUN_NRF52840_MINI    1
 #define PHOTORESISTOR_ADC_PIN NRF_SAADC_INPUT_AIN6
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
-
-/* TWI instance ID. */
-#define TWI_INSTANCE_ID     0
 
 /* Indicates if operation on TWI has ended. */
 volatile bool _twi_init = false;
@@ -239,7 +234,7 @@ void saadc_callback (nrfx_saadc_evt_t const * p_event) {
 }
 
 // sample a particular analog channel in blocking mode
-nrf_saadc_value_t sample_value (uint8_t channel) {
+nrf_saadc_value_t sample_light_level (uint8_t channel) {
   nrf_saadc_value_t val;
   ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
   APP_ERROR_CHECK(error_code);
@@ -266,26 +261,27 @@ static void adc_init(void) {
     APP_ERROR_CHECK(error_code);
 }
 
-// Configuring initial states
-general_state_t trip_state = OFF;
-general_state_t head_light_state = OFF;
-general_state_t nav_state = OFF;
-turn_light_state_t turn_light_state = TURN_OFF;
+bool automatic_turn_left = false;
+bool automatic_turn_right = false;
+uint32_t left_turn_timer_id = 0;
+uint32_t right_turn_timer_id = 0;
 
-// booleans for buttons
-bool switch_state_left = false;
-bool switch_state_right = false;
-bool ride_button_state = false;
+void cancel_left_turn_timer (void) {
+    if (left_turn_timer_id) {
+        virtual_timer_cancel(left_turn_timer_id);
+        left_turn_timer_id = 0;
+    }
+    automatic_turn_left = false;
+}
 
-// booleans for turning when navigation is active
-bool nav_turn_right = false;
-bool nav_turn_left = false;
+void cancel_right_turn_timer (void) {
+    if (right_turn_timer_id) {
+        virtual_timer_cancel(right_turn_timer_id);
+        right_turn_timer_id = 0;
+    }
+    automatic_turn_right = false;
+}
 
-// Variables for lux value
-uint32_t tsl2561_lux;
-
-volatile int16_t result = 0;
-volatile float precise_result = 0;
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -306,7 +302,6 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    // twi_init(); // IMPORTANT
     buttons_init(); // IMPORTANT
     // twi_init0();
     // twi_init1();
@@ -317,16 +312,35 @@ int main(void)
     NRF_LOG_INFO("Front App Started.");
     advertising_start();
     NRF_LOG_FLUSH();
-    // twi_scan();
-    // tsl2561_init(&twi_mngr_instance);
 
+    // Variables used within FSM
+
+    // Configuring initial states
+    general_state_t trip_state = OFF;
+    general_state_t head_light_state = OFF;
+    general_state_t brake_light_state = OFF;
+    general_state_t nav_state = OFF;
+    turn_light_state_t turn_light_state = TURN_OFF;
+
+    // Variables for turn FSM
     double* roll;
     double* gyro_z;
-    bool left_turn = false;
-    bool right_turn = false;
     bool intended_left = false;
     bool intended_right =  false;
     nrf_saadc_value_t light_val = 0;
+
+    // booleans for buttons
+    bool switch_state_left = false;
+    bool switch_state_right = false;
+    bool ride_button_state = false;
+
+    // Variables for brake light FSM
+    double* acceleration;
+
+    // booleans for turning when navigation is active
+    bool nav_turn_right = false;
+    bool nav_turn_left = false;
+
     // Enter main loop.
     while (true) {
         NRF_LOG_INFO("Main Loop");
@@ -359,49 +373,8 @@ int main(void)
                 }
             }
 
-            roll = get_roll_degrees();
-            gyro_z = get_gyro_z();
-            intended_right = *roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD;
-
-            if (intended_right != right_turn) {
-                if (intended_right) {
-                    display_set_rightTurn(true);
-                    right_turn = true;
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
-                    NRF_LOG_INFO("THRESH RIGHT REACHED");
-                } else {
-                    NRF_LOG_INFO("RIGHT CANCELLED");
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
-                    display_set_rightTurn(false);
-                    right_turn = false;
-                } 
-            }
-
-            intended_left = *roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD;
-            
-            if (intended_left != left_turn) {
-                if (intended_left) {
-                    display_set_leftTurn(true);
-                    left_turn = true;
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
-                    NRF_LOG_INFO("THRESH LEFT REACHED");
-                } else {
-                    NRF_LOG_INFO("LEFT CANCELLED");
-                    ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
-                    display_set_leftTurn(false);
-                    left_turn = false;
-                }
-            }
-
-            // if (*roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD) {
-            //     display_set_leftTurn(true);
-            //     //NRF_LOG_INFO("THRESH right REACHED");
-            // } else {
-            //     display_set_leftTurn(false);
-            // }
-
             // FSM for headlight
-            light_val = sample_value(0);
+            light_val = sample_light_level(0);
             NRF_LOG_INFO("LIGHT: %d", light_val);
             switch (head_light_state) {
                 case OFF: {
@@ -435,90 +408,143 @@ int main(void)
                 }
             }
 
-            
+            // FSM for turnlights.
+            roll = get_roll_degrees();
+            gyro_z = get_gyro_z();
+            intended_right = *roll > ANGLE_THRESHOLD || *gyro_z > GYROZ_THRESHOLD;
+            intended_left = *roll < -ANGLE_THRESHOLD || *gyro_z < -GYROZ_THRESHOLD;
+            // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
+            switch_state_left = nrf_gpio_pin_read(9);
+            switch_state_right = nrf_gpio_pin_read(10);
+            switch (turn_light_state) {
+                case TURN_OFF: {
+                    if (!switch_state_right && (switch_state_left || nav_turn_left || intended_left)) {
+                        toggle_flash_left();
+                        display_set_leftTurn(true);
+                        // Turn on left turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
+                        // Only start timer if automatic
+                        if (intended_left) {
+                            automatic_turn_left = true;
+                            left_turn_timer_id = virtual_timer_start(3000000, cancel_left_turn_timer);
+                        }
+                        turn_light_state = TURN_LEFT;
+                    } else if (switch_state_right || nav_turn_right || intended_right) {
+                        toggle_flash_right();
+                        display_set_rightTurn(true);
+                        // Turn on right turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+                        // Only start timer if automatic
+                        if (intended_right) {
+                            automatic_turn_right = true;
+                            right_turn_timer_id = virtual_timer_start(3000000, cancel_right_turn_timer);
+                        }
+                        turn_light_state = TURN_RIGHT;
+                    } else {
+                        turn_light_state = TURN_OFF;
+                    }
+                    break;
+                }
 
-            // // FSM for turnlights.
-            // // TODO: Replace fn with real one
-            // // polar_accel = bno055_get_polar_acceleration();
-            // float polar_accel = 0;
-            // // The physical switch for manual turn signals. Overrides automatic signals when active (left or right).
-            // switch_state_left = nrf_gpio_pin_read(9);
-            // switch_state_right = nrf_gpio_pin_read(10);
-            // // switch_state_right = false;
-            // // switch_state_left = false;
-            // switch (turn_light_state) {
-            //     case TURN_OFF: {
-            //         if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-            //             // If current polar_acceleration pass threshold (negative for left)
-            //             toggle_flash_left();
-            //             display_set_leftTurn(true);
-            //             // TODO: sendtoggle_rearturn_left_char();
-            //             turn_light_state = TURN_LEFT;
-            //         } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-            //             // If current polar_acceleration pass threshold (negative for left)
-            //             toggle_flash_right();
-            //             display_set_rightTurn(true);
-            //             // TODO: sendtoggle_rearturn_right_char();
-            //             turn_light_state = TURN_RIGHT;
-            //         } else {
-            //             turn_light_state = TURN_OFF;
-            //         }
-            //         break;
-            //     }
+                case TURN_LEFT: {
+                    if (!switch_state_right && (switch_state_left || nav_turn_left || intended_left)) {
+                        // Do nothing
+                        turn_light_state = TURN_LEFT;
+                    } else if (switch_state_right || nav_turn_right || intended_right) {
+                        // First toggle left
+                        toggle_flash_left();
+                        display_set_leftTurn(false);
+                        // Turn off left turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
+                        cancel_left_turn_timer();
 
-            //     case TURN_LEFT: {
-            //         if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-            //             // Do nothing
-            //             turn_light_state = TURN_LEFT;
-            //         } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-            //             // If current polar_acceleration pass threshold (negative for left)
-            //             // First toggle left
-            //             toggle_flash_left();
-            //             display_set_leftTurn(false);
-            //             // TODO: sendtoggle_rearturn_left_char();
+                        // Then toggle right
+                        toggle_flash_right();
+                        display_set_rightTurn(true);
+                        // Turn on right turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 4);
+                        // Only start timer if automatic
+                        if (intended_right) {
+                            automatic_turn_right = true;
+                            right_turn_timer_id = virtual_timer_start(3000000, cancel_right_turn_timer);
+                        }
+                        turn_light_state = TURN_RIGHT;
+                    } else {
+                        if (automatic_turn_left) {
+                            // Do nothing
+                            turn_light_state = TURN_LEFT;
+                        } else {
+                            // If no longer turning, toggle lights off
+                            toggle_flash_left();
+                            display_set_leftTurn(false);
+                            // Turn off left turn signal on back module
+                            ble_lbs_on_state_change(m_conn_handle, &m_lbs, 3);
+                            turn_light_state = TURN_OFF;
+                        }
+                    }
+                    break;
+                }
 
-            //             // Then toggle right
-            //             toggle_flash_right();
-            //             display_set_rightTurn(true);
-            //             // TODO: sendtoggle_rearturn_right_char();
-            //             turn_light_state = TURN_RIGHT;
-            //         } else {
-            //             // If no longer turning, toggle lights off
-            //             toggle_flash_left();
-            //             display_set_leftTurn(false);
-            //             // TODO: sendtoggle_rearturn_left_char();
-            //             turn_light_state = TURN_OFF;
-            //         }
-            //         break;
-            //     }
+                case TURN_RIGHT: {
+                    if (!switch_state_right && (switch_state_left || nav_turn_left || intended_left)) {
+                        // First  toggle right
+                        toggle_flash_right();
+                        display_set_rightTurn(false);
+                        // Turn off right turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+                        cancel_right_turn_timer();
 
-            //     case TURN_RIGHT: {
-            //         if (!switch_state_right && (switch_state_left || nav_turn_left || polar_accel < -TURNLIGHT_POLAR_TURN_THRESHOLD)) {
-            //             // If current polar_acceleration pass threshold (negative for left)
-            //             // First  toggle right
-            //             toggle_flash_right();
-            //             display_set_rightTurn(false);
-            //             // TODO: sendtoggle_rearturn_right_char();
-            //             // TODO: Toggle display right turn
+                        // Then toggle left
+                        toggle_flash_left();
+                        display_set_leftTurn(true);
+                        // Turn on left turn signal on back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 2);
+                        // Only start timer if automatic
+                        if (intended_left) {
+                            automatic_turn_left = true;
+                            left_turn_timer_id = virtual_timer_start(3000000, cancel_left_turn_timer);
+                        }
+                        turn_light_state = TURN_LEFT;
+                    } else if (switch_state_right || nav_turn_right || intended_right) {
+                        // Do nothing
+                        turn_light_state = TURN_RIGHT;
+                    } else {
+                        if (automatic_turn_right) {
+                            turn_light_state = TURN_RIGHT;
+                        } else {
+                            // If no longer turning, toggle lights off
+                            toggle_flash_right();
+                            display_set_rightTurn(false);
+                            // Turn off right turn signal on back module
+                            ble_lbs_on_state_change(m_conn_handle, &m_lbs, 5);
+                            turn_light_state = TURN_OFF;
+                        }
+                    }
+                    break;
+                }
+            }
 
-            //             // Then toggle left
-            //             toggle_flash_left();
-            //             display_set_leftTurn(true);
-            //             // TODO: sendtoggle_rearturn_left_char();
-            //             turn_light_state = TURN_LEFT;
-            //         } else if (switch_state_right || nav_turn_right || polar_accel > TURNLIGHT_POLAR_TURN_THRESHOLD) {
-            //             // Do nothing
-            //             turn_light_state = TURN_RIGHT;
-            //         } else {
-            //             // If no longer turning, toggle lights off
-            //             toggle_flash_right();
-            //             display_set_rightTurn(false);
-            //             // TODO: sendtoggle_rearturn_right_char();
-            //             turn_light_state = TURN_OFF;
-            //         }
-            //         break;
-            //     }
-            // }
+            acceleration = get_linaccel_y();
+            // FSM for brake light
+            switch (brake_light_state) {
+                case OFF: {
+                    if (*acceleration <= 0) {
+                        // Turn brake light on in back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 0);
+                        brake_light_state = ON;
+                    }
+                    break;
+                }
+
+                case ON: {
+                    if (*acceleration > 0) {
+                        // Turn brake light off in back module
+                        ble_lbs_on_state_change(m_conn_handle, &m_lbs, 1);
+                        brake_light_state = OFF;
+                    }
+                    break;
+                }
+            }
 
             // FSM for nav system
             switch (nav_state) {
@@ -536,8 +562,7 @@ int main(void)
                     } else {
                         // Automatic turn signals when expecting imminent turn
                         float temp_dist = get_distance_remaining();
-                        // TODO: Define these somewhere else
-                        if (temp_dist < 10) {
+                        if (temp_dist < NAV_AUTOMATIC_TURN_DISTANCE) {
                             uint32_t turn_dir = get_turn_direction();
                             if (turn_dir == 1) {
                                 nav_turn_left = true;

@@ -41,28 +41,35 @@ light_state_t right_bsm_state = LIGHT_OFF;
  */
 static void backlight_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 0) {
+    bool brake = data[0] & 1;
+    bool left = (data[0] >> 1) & 1;
+    bool right = (data[0] >> 2) & 1;
+    bool tail = (data[0] >> 3) & 1;
+    if (brake) {
         set_brake(true);
         NRF_LOG_INFO("Turned on brake");
-    } else if (data[0] == 1) {
+    } else {
         set_brake(false);
         NRF_LOG_INFO("Turned off brake");
-    } else if (data[0] == 2) {
+    } 
+    if (left) {
         set_left(true);
         NRF_LOG_INFO("Turned on left");
-    } else if (data[0] == 3) {
+    } else {
         set_left(false);
         NRF_LOG_INFO("Turned off left");
-    } else if (data[0] == 4) {
+    } 
+    if (right) {
         set_right(true);
         NRF_LOG_INFO("Turned on right");
-    } else if (data[0] == 5) {
+    } else {
         set_right(false);
         NRF_LOG_INFO("Turned off right");
-    } else if (data[0] == 6) {
+    } 
+    if (tail) {
         set_tail(true);
         NRF_LOG_INFO("Turned on tail");
-    } else if (data[0] == 7) {
+    } else {
         set_tail(false);
         NRF_LOG_INFO("Turned off tail");
     }

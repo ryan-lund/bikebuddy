@@ -135,6 +135,7 @@ void drawLeftBig() {
         drawDistWP(bufferleft_big, _distwp);
     }
     SSD1306_display(_m_twi_master0, SSD1306_I2C_ADDRESS2, bufferleft_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+    NRF_LOG_ERROR("DRAW LEFT BIG");
 }
 
 
@@ -148,6 +149,7 @@ void drawRightBig() {
     }
     Adafruit_GFX_drawLine(0, 32, 128, 32, WHITE);
     SSD1306_display(_m_twi_master1, SSD1306_I2C_ADDRESS2, bufferright_big, SSD1306_128_64_LCDWIDTH, SSD1306_128_64_LCDHEIGHT);
+    NRF_LOG_ERROR("DRAW RIGHT BIG");
 }
 
 void display_set_direction(direction dir) {
@@ -206,6 +208,7 @@ void drawLeftSmall() {
         drawBS(bufferleft_small);
     }
     SSD1306_display(_m_twi_master0, SSD1306_I2C_ADDRESS, bufferleft_small, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    NRF_LOG_ERROR("DRAW LEFT SMALL");
 }
 
 void drawRightSmall() {
@@ -218,6 +221,7 @@ void drawRightSmall() {
         drawBS(bufferright_small);
     }
     SSD1306_display(_m_twi_master1, SSD1306_I2C_ADDRESS, bufferright_small, SSD1306_128_32_LCDWIDTH, SSD1306_128_32_LCDHEIGHT);
+    NRF_LOG_ERROR("DRAW RIGHT SMALL");
 }
 
 

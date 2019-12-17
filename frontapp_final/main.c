@@ -126,16 +126,13 @@ static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t
 }
 
 float distance;
-char distance_string[8];
+char distance_string[6];
 static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    NRF_LOG_INFO("distance");
     memcpy(&distance, data, sizeof(distance));
-    NRF_LOG_HEXDUMP_INFO(data, 20);
     NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
     memcpy(&distance_string, data+4, sizeof(distance_string));
-    NRF_LOG_INFO("%s", distance_string);
-    display_set_disttowp(distance_string);
+    display_set_disttowp((char *)data+4);
 }
 
 static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
@@ -156,10 +153,8 @@ static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uin
 static void light_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
     if (data[0] == 1) {
-        ble_send_backlight_command(m_conn_handle, &m_lbs, 4);
         NRF_LOG_INFO("Navigation Enabled");
     } else {
-        ble_send_backlight_command(m_conn_handle, &m_lbs, 5);
         NRF_LOG_HEXDUMP_INFO(data, 32);
     }
 }
@@ -302,6 +297,7 @@ int main(void)
     bool nav_turn_right = false;
     bool nav_turn_left = false;
 
+    uint8_t backlight_state = 0;
     // Enter main loop.
     while (true) {
         // FSM for Trip Details
@@ -333,18 +329,22 @@ int main(void)
 
             // FSM for headlight
             light_val = sample_light_level(0);
+            // NRF_LOG_INFO("Light: %d", light_val);
             switch (head_light_state) {
                 case OFF: {
                     // If LUX is below threshold
                     if (light_val < HEADLIGHT_THRESHOLD) {
-                        // TURN LIGHT ON
-                        toggle_headlight();
-                        // TODO: toggle_taillight_char();
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 6);
                         head_light_state = ON;
+                        // TURN LIGHT ON
+                        set_headlight(ON);
+                        // TODO: toggle_taillight_char();
+                        backlight_state = 8 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                     } else {
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 7);
                         head_light_state = OFF;
+                        backlight_state = 7 & backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
+                        
                     }
                     break;
                 }
@@ -353,13 +353,15 @@ int main(void)
                     // If LUX is above threshold
                     if (light_val > HEADLIGHT_THRESHOLD) {
                         // TURN LIGHT OFF
-                        toggle_headlight();
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 7);
-                        // TODO: toggle_taillight_char();
                         head_light_state = OFF;
+                        set_headlight(OFF);
+                        backlight_state = 0b0111 & backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
+                        // TODO: toggle_taillight_char();
                     } else {
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 6);
                         head_light_state = ON;
+                        backlight_state = 0b1000 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                     }
                     break;
                 }
@@ -378,9 +380,9 @@ int main(void)
                     if (!switch_state_right && (switch_state_left || nav_turn_left || intended_left)) {
                         toggle_flash_left();
                         display_set_leftTurn(true);
-                        NRF_LOG_INFO("Turning Left");
                         // Turn on left turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 2);
+                        backlight_state = 0b0010 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         // Only start timer if automatic
                         if (intended_left) {
                             automatic_turn_left = true;
@@ -390,9 +392,9 @@ int main(void)
                     } else if (switch_state_right || nav_turn_right || intended_right) {
                         toggle_flash_right();
                         display_set_rightTurn(true);
-                        NRF_LOG_INFO("Turning Right");
                         // Turn on right turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 4);
+                        backlight_state = 0b0100 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         // Only start timer if automatic
                         if (intended_right) {
                             automatic_turn_right = true;
@@ -400,6 +402,7 @@ int main(void)
                         }
                         turn_light_state = TURN_RIGHT;
                     } else {
+                        backlight_state = 0b1001 & backlight_state;
                         turn_light_state = TURN_OFF;
                     }
                     break;
@@ -414,14 +417,16 @@ int main(void)
                         toggle_flash_left();
                         display_set_leftTurn(false);
                         // Turn off left turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 3);
+                        backlight_state = 0b1101 & backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         cancel_left_turn_timer();
 
                         // Then toggle right
                         toggle_flash_right();
                         display_set_rightTurn(true);
                         // Turn on right turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 4);
+                        backlight_state = 0b0100 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         // Only start timer if automatic
                         if (intended_right) {
                             automatic_turn_right = true;
@@ -437,7 +442,8 @@ int main(void)
                             toggle_flash_left();
                             display_set_leftTurn(false);
                             // Turn off left turn signal on back module
-                            ble_send_backlight_command(m_conn_handle, &m_lbs, 3);
+                            backlight_state = 0b1001 & backlight_state;
+                            ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                             turn_light_state = TURN_OFF;
                         }
                     }
@@ -450,15 +456,16 @@ int main(void)
                         toggle_flash_right();
                         display_set_rightTurn(false);
                         // Turn off right turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 5);
+                        backlight_state = 0b1011 & backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         cancel_right_turn_timer();
 
                         // Then toggle left
                         toggle_flash_left();
                         display_set_leftTurn(true);
-                        NRF_LOG_INFO("Turning Right");
                         // Turn on left turn signal on back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 2);
+                        backlight_state = 0b0010 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         // Only start timer if automatic
                         if (intended_left) {
                             automatic_turn_left = true;
@@ -476,7 +483,8 @@ int main(void)
                             toggle_flash_right();
                             display_set_rightTurn(false);
                             // Turn off right turn signal on back module
-                            ble_send_backlight_command(m_conn_handle, &m_lbs, 5);
+                            backlight_state = 0b1001 & backlight_state;
+                            ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                             turn_light_state = TURN_OFF;
                         }
                     }
@@ -485,12 +493,14 @@ int main(void)
             }
 
             acceleration = get_linaccel_y();
+            // NRF_LOG_INFO("Acceleration " NRF_LOG_FLOAT_MARKER "", NRF_LOG_FLOAT(*acceleration));
             // FSM for brake light
             switch (brake_light_state) {
                 case OFF: {
-                    if (*acceleration <= 0) {
+                    if (*acceleration <= -0.5) {
                         // Turn brake light on in back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 0);
+                        backlight_state = 0b0001 | backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         brake_light_state = ON;
                     }
                     break;
@@ -499,7 +509,8 @@ int main(void)
                 case ON: {
                     if (*acceleration > 0) {
                         // Turn brake light off in back module
-                        ble_send_backlight_command(m_conn_handle, &m_lbs, 1);
+                        backlight_state = 0b1110 & backlight_state;
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, backlight_state);
                         brake_light_state = OFF;
                     }
                     break;
@@ -542,7 +553,7 @@ int main(void)
             }
             NRF_LOG_FLUSH();
         } else {
-            nrf_delay_ms(200);
+            nrf_delay_ms(1000);
             NRF_LOG_INFO("Not connected to BLE yet");
             NRF_LOG_FLUSH();
         }

@@ -46,7 +46,7 @@ def parse_nav_direction(instruction):
 
 def parse_nav_waypoint(instruction):
     if 'Arrive at' in instruction:
-        return 'Your Destination' 
+        return 'Arrived!' 
     elif ' on ' in instruction:
         return instruction.split(' on ')[1]
     elif ' onto ' in instruction:

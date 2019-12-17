@@ -3,11 +3,13 @@
 #include "nrf.h"
 #include "app_util.h"
 #include "nrf_gpio.h"
+#include "nrf_delay.h"
 #include "lights.h"
 #include "virtual_timer.h"
 
 int left_timer_id = 0;
 int right_timer_id = 0;
+
 
 void lights_init(void) {
 	// configure pins as outputs
@@ -22,6 +24,17 @@ void lights_init(void) {
 	nrf_gpio_pin_clear(LEFT_PIN);
 	nrf_gpio_pin_clear(RIGHT_PIN); 
 	nrf_gpio_pin_clear(HEAD_PIN);
+}
+
+void press_button(int pin, int presses) {
+	int i;
+	for (i = 0; i < presses; i++) {
+		nrf_gpio_pin_set(HEAD_PIN);
+		nrf_delay_ms(50);
+		nrf_gpio_pin_clear(HEAD_PIN);
+		nrf_delay_ms(50);
+		nrf_gpio_pin_set(HEAD_PIN);
+	}
 }
 
 void toggle_left(void) {
@@ -46,6 +59,22 @@ void set_right(void) {
 
 void clear_right(void) {
 	nrf_gpio_pin_clear(RIGHT_PIN);
+}
+
+void set_headlight(bool set_val) {
+	if (set_val) {
+		nrf_gpio_pin_clear(HEAD_PIN);
+		nrf_delay_ms(1);
+		nrf_gpio_pin_set(HEAD_PIN);
+		nrf_delay_ms(1);
+		nrf_gpio_pin_clear(HEAD_PIN);
+	} else {
+		nrf_gpio_pin_clear(HEAD_PIN);
+		nrf_delay_ms(1);
+		nrf_gpio_pin_set(HEAD_PIN);
+		nrf_delay_ms(1);
+		nrf_gpio_pin_clear(HEAD_PIN);
+	}
 }
 
 void toggle_flash_left(void) {

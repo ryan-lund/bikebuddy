@@ -11,6 +11,8 @@
 
 void lights_init(void);
 
+void press_button(int, int);
+
 void toggle_left(void);
 
 void set_left(void);
@@ -22,6 +24,8 @@ void toggle_right(void);
 void set_right(void);
 
 void clear_right(void);
+
+void set_headlight(bool);
 
 void toggle_flash_left(void);
 

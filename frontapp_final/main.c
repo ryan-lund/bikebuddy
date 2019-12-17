@@ -133,10 +133,13 @@ static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint
     NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
     memcpy(&distance_string, data+4, sizeof(distance_string));
     display_set_disttowp((char *)data+4);
+    // set_nav_distance_remaining((float) *distance_string);
+    // display_set_disttowp(distance_string);
 }
 
 static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
+    set_nav_direction(data[0]);
     if (data[0] == 0) {
         display_set_direction(FRONT);
     } else if (data[0] == 1) {

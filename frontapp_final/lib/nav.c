@@ -27,16 +27,24 @@ void nav_stop(void) {
     nav_system_active = false;
 }
 
-// TODO: finalize 
-void nav_update_waypoint(uint8_t* data) {
-    uint32_t distance;
-    uint8_t direction;
-    char road[15];
-    memcpy(&distance, data, sizeof(distance));
-    memcpy(&direction, data+5, sizeof(direction));
-    memcpy(road, data+6, 15 * sizeof(char));
-    distance_remaining = distance;
-    // TODO: UPDATE DISPLAY FOR DIR AND ROAD
+// // TODO: finalize 
+// void nav_update_waypoint(uint8_t* data) {
+//     uint32_t distance;
+//     uint8_t direction;
+//     char road[15];
+//     memcpy(&distance, data, sizeof(distance));
+//     memcpy(&direction, data+5, sizeof(direction));
+//     memcpy(road, data+6, 15 * sizeof(char));
+//     distance_remaining = distance;
+//     // TODO: UPDATE DISPLAY FOR DIR AND ROAD
+// }
+
+void set_nav_direction(uint32_t dir) {
+    turn_dir = dir;
+}
+
+void set_nav_distance_remaining (float dist_remain) {
+    distance_remaining = dist_remain;
 }
 
 bool get_nav_system_active(void) {

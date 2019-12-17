@@ -92,7 +92,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
                               0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
 #define LBS_UUID_SERVICE           0x1523
-#define LBS_UUID_NAV_CHAR          0x1524
+#define LBS_UUID_STREET_CHAR          0x1524
 #define LBS_UUID_DIRECTION_CHAR    0x1525
 #define LBS_UUID_BLIND_CHAR        0x1526
 #define LBS_UUID_LIGHT_CHAR        0x1527  
@@ -103,7 +103,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 // Forward declaration of the ble_lbs_t type.
 typedef struct ble_lbs_s ble_lbs_t;
 
-typedef void (*ble_lbs_nav_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
+typedef void (*ble_lbs_street_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
 typedef void (*ble_lbs_direction_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
 typedef void (*ble_lbs_light_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
 typedef void (*ble_lbs_blind_write_handler_t) (uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * new_state, uint16_t len);
@@ -113,7 +113,7 @@ typedef void (*ble_lbs_distance_write_handler_t) (uint16_t conn_handle, ble_lbs_
  *        initialization of the service.*/
 typedef struct
 {
-    ble_lbs_nav_write_handler_t nav_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_street_write_handler_t street_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
     ble_lbs_direction_write_handler_t direction_write_handler;
     ble_lbs_light_write_handler_t light_write_handler;
     ble_lbs_blind_write_handler_t blind_write_handler;
@@ -124,14 +124,14 @@ typedef struct
 struct ble_lbs_s
 {
     uint16_t                    service_handle;      /**< Handle of Bike Buddy Service (as provided by the BLE stack). */
-    ble_gatts_char_handles_t    nav_char_handles;    
+    ble_gatts_char_handles_t    street_char_handles;    
     ble_gatts_char_handles_t    direction_char_handles; 
     ble_gatts_char_handles_t    blind_char_handles;    
     ble_gatts_char_handles_t    light_char_handles; 
     ble_gatts_char_handles_t    back_char_handles;
     ble_gatts_char_handles_t    distance_char_handles;
     uint8_t                     uuid_type;           /**< UUID type for the Bike Buddy Service. */
-    ble_lbs_nav_write_handler_t nav_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
+    ble_lbs_street_write_handler_t street_write_handler; /**< Event handler to be called when the LED Characteristic is written. */
     ble_lbs_direction_write_handler_t direction_write_handler;
     ble_lbs_light_write_handler_t light_write_handler;
     ble_lbs_blind_write_handler_t blind_write_handler;
@@ -169,7 +169,7 @@ void ble_lbs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
  *
  * @retval NRF_SUCCESS If the notification was sent successfully. Otherwise, an error code is returned.
  */
-uint32_t ble_lbs_on_state_change(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t button_state);
+uint32_t ble_send_backlight_command(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t button_state);
 
 
 #ifdef __cplusplus

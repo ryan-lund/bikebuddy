@@ -126,6 +126,16 @@ int main(void)
     bsm_dist_t bsm_dist;
     uint32_t count = 0;
     while (1) {
+        nrf_delay_ms(250);
+        float speed = 4.20;
+        float distance = 13.37;
+        uint32_t time = 420;
+        uint8_t data[8];
+        NRF_LOG_INFO("Sending Speed Distance Notification");
+        memcpy(data, &speed, sizeof(speed));
+        memcpy(data+4, &distance, sizeof(distance));
+        memcpy(data+8, &time, sizeof(time));
+        ble_send_speed(m_conn_handle, &m_lbs, data);
         bsm_danger = bsm_get_danger();
         bsm_dist = bsm_get_dist();
         NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
@@ -184,14 +194,13 @@ int main(void)
                 break;
             }
         }
-
+        
         if (count < 3) {
             count++;
         } else {
 
             // TODO: poll hall effect and send data
         }
-
         nrf_delay_ms(250);
         NRF_LOG_FLUSH();
         idle_state_handle();

@@ -94,7 +94,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 #define LBS_UUID_SERVICE           0x1523
 #define LBS_UUID_BLINDSPOT_CHAR    0x1524
 #define LBS_UUID_BACKLIGHT_CHAR    0x1525
-#define LBS_UUID_SPEEDDISTANCE_CHAR      0x1526
+#define LBS_UUID_SPEED_CHAR      0x1526
 
 // Forward declaration of the ble_lbs_t type.
 typedef struct ble_lbs_s ble_lbs_t;
@@ -114,7 +114,7 @@ struct ble_lbs_s
     uint16_t                    service_handle;      /**< Handle of Bike Buddy Service Rear (as provided by the BLE stack). */
     ble_gatts_char_handles_t    backlight_char_handles;    /**< Handles related to the LED Characteristic. */
     ble_gatts_char_handles_t    blindspot_char_handles; /**< Handles related to the Button Characteristic. */
-    ble_gatts_char_handles_t    speeddistance_char_handles;
+    ble_gatts_char_handles_t    speed_char_handles;
     uint8_t                     uuid_type;           /**< UUID type for the Bike Buddy Service Rear. */
     ble_lbs_backlight_write_handler_t backlight_write_handler;   /**< Event handler to be called when the LED Characteristic is written. */
 };
@@ -152,7 +152,7 @@ void ble_lbs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
  */
 uint32_t send_blindspot_warning(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t data);
 
-uint32_t send_speeddistance(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data);
+uint32_t ble_send_speed(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data);
 
 
 #ifdef __cplusplus

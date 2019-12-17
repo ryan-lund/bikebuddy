@@ -58,7 +58,15 @@ static void backlight_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uin
     } else if (data[0] == 5) {
         set_right(false);
         NRF_LOG_INFO("Turned off right");
+    } else if (data[0] == 6) {
+        set_tail(true);
+        NRF_LOG_INFO("Turned on tail");
+    } else if (data[0] == 7) {
+        set_tail(false);
+        NRF_LOG_INFO("Turned off tail");
     }
+
+
 }
 
 
@@ -83,6 +91,8 @@ static void services_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for applicatino main entry.
+ */
 int main(void)
 {
     // Initialize.
@@ -96,16 +106,23 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    nrf_delay_ms(3000);
     bsm_init();
     virtual_timer_init();
     lights_init();
+    nrf_delay_ms(3000);
+
     // Start execution.
     NRF_LOG_INFO("Back App Started.");
+    NRF_LOG_FLUSH();
     advertising_start();
 
-    // Enter main loop.
+    nrf_gpio_pin_dir_set(21, NRF_GPIO_PIN_DIR_OUTPUT);
+    nrf_gpio_pin_dir_set(22, NRF_GPIO_PIN_DIR_OUTPUT); 
+    nrf_gpio_pin_clear(21);
+    nrf_gpio_pin_clear(21);
+
     bsm_danger_t bsm_danger;
+    bsm_dist_t bsm_dist;
     while (1) {
         nrf_delay_ms(250);
         float speed = 4.20;
@@ -117,140 +134,69 @@ int main(void)
         memcpy(data+4, &distance, sizeof(distance));
         memcpy(data+8, &time, sizeof(time));
         ble_send_speed(m_conn_handle, &m_lbs, data);
-        // bsm_danger = bsm_get_danger();
-        // NRF_LOG_HEXDUMP_INFO(&bsm_danger, sizeof(bsm_danger));
-        // NRF_LOG_INFO("Main Loop Started.");
-        // switch (left_bsm_state) {
-        //     case LIGHT_OFF: {
-        //         if (bsm_danger.left_danger) {
-        //             left_bsm_state = LIGHT_ON;
-        //             // TODO: WRITE A 0 ON BACK->FRONT BLE
-        //             send_blindspot_warning(m_conn_handle, &m_lbs, 0);
-        //         } else {
-        //             left_bsm_state = LIGHT_OFF;
-        //         }
-        //         break;
-        //     }
-        //     case LIGHT_ON: {
-        //         if (!bsm_danger.left_danger) {
-        //             left_bsm_state = LIGHT_OFF;
-        //             // TODO: WRITE A 0 ON BACK->FRONT BLE
-        //             send_blindspot_warning(m_conn_handle, &m_lbs, 0);
-        //         } else {
-        //             left_bsm_state = LIGHT_ON;
-        //         }
-        //         break;
-        //     }
-        // }
+        bsm_danger = bsm_get_danger();
+        bsm_dist = bsm_get_dist();
+        NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
+        NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
 
-        // switch (right_bsm_state) {
-        //     case LIGHT_OFF: {
-        //         if (bsm_danger.right_danger) {  
-        //             right_bsm_state = LIGHT_ON;
-        //             // TODO: WRITE A 1 ON BACK->FRONT BLE
-        //             send_blindspot_warning(m_conn_handle, &m_lbs, 1);
-        //         } else {
-        //             right_bsm_state = LIGHT_OFF;
-        //         }
-        //         break;
-        //     }
-        //     case LIGHT_ON: {
-        //         if (!bsm_danger.right_danger) {
-        //             right_bsm_state = LIGHT_OFF;
-        //             // TODO: WRITE A 1 ON BACK->FRONT BLE
-        //             send_blindspot_warning(m_conn_handle, &m_lbs, 1);
-        //         } else {
-        //             right_bsm_state = LIGHT_ON;
-        //         }
-        //         break;
-        //     }
-        // }
+        switch (left_bsm_state) {
+            case LIGHT_OFF: {
+                if (bsm_danger.left_danger) {
+                    left_bsm_state = LIGHT_ON;
+                    // TODO: WRITE A 0 ON BACK->FRONT BLE
+                    send_blindspot_warning(m_conn_handle, &m_lbs, 0);
+                    nrf_gpio_pin_set(22);
+                } else {
+                    left_bsm_state = LIGHT_OFF;
+                    nrf_gpio_pin_clear(22);
+                }
+                break;
+            }
+            case LIGHT_ON: {
+                if (!bsm_danger.left_danger) {
+                    left_bsm_state = LIGHT_OFF;
+                    // TODO: WRITE A 0 ON BACK->FRONT BLE
+                    send_blindspot_warning(m_conn_handle, &m_lbs, 0);
+                    nrf_gpio_pin_clear(22);
+                } else {
+                    left_bsm_state = LIGHT_ON;
+                    nrf_gpio_pin_set(22);
+                }
+                break;
+            }
+        }
 
-        // nrf_delay_ms(250);
+        switch (right_bsm_state) {
+            case LIGHT_OFF: {
+                if (bsm_danger.right_danger) {  
+                    right_bsm_state = LIGHT_ON;
+                    // TODO: WRITE A 1 ON BACK->FRONT BLE
+                    send_blindspot_warning(m_conn_handle, &m_lbs, 1);
+                    nrf_gpio_pin_set(21);
+                } else {
+                    right_bsm_state = LIGHT_OFF;
+                    nrf_gpio_pin_clear(21);
+                }
+                break;
+            }
+            case LIGHT_ON: {
+                if (!bsm_danger.right_danger) {
+                    right_bsm_state = LIGHT_OFF;
+                    // TODO: WRITE A 1 ON BACK->FRONT BLE
+                    send_blindspot_warning(m_conn_handle, &m_lbs, 1);
+                    nrf_gpio_pin_clear(21);
+                } else {
+                    right_bsm_state = LIGHT_ON;
+                    nrf_gpio_pin_set(21);
+                }
+                break;
+            }
+        }
+        nrf_delay_ms(250);
+        NRF_LOG_FLUSH();
         idle_state_handle();
     }
 }
-
-
-// /**@brief Function for applicatino main entry.
-//  */
-// int main(void)
-// {
-//     // Initialize.
-//     log_init();
-//     leds_init();
-//     timers_init();
-//     power_management_init();
-//     ble_stack_init();
-//     gap_params_init();
-//     gatt_init();
-//     services_init();
-//     advertising_init();
-//     conn_params_init();
-//     bsm_init();
-//     virtual_timer_init();
-//     lights_init();
-//     nrf_delay_ms(3000);
-
-//     // Start execution.
-//     NRF_LOG_INFO("Back App Started.");
-//     advertising_start();
-
-//     bsm_danger_t bsm_danger;
-//     while (1) {
-//         bsm_danger = bsm_get_danger();
-//         NRF_LOG_INFO("Main Loop Started.");
-//         switch (left_bsm_state) {
-//             case LIGHT_OFF: {
-//                 if (bsm_danger.left_danger) {
-//                     left_bsm_state = LIGHT_ON;
-//                     // TODO: WRITE A 0 ON BACK->FRONT BLE
-//                     send_blindspot_warning(m_conn_handle, &m_lbs, 0);
-//                 } else {
-//                     left_bsm_state = LIGHT_OFF;
-//                 }
-//                 break;
-//             }
-//             case LIGHT_ON: {
-//                 if (!bsm_danger.left_danger) {
-//                     left_bsm_state = LIGHT_OFF;
-//                     // TODO: WRITE A 0 ON BACK->FRONT BLE
-//                     send_blindspot_warning(m_conn_handle, &m_lbs, 0);
-//                 } else {
-//                     left_bsm_state = LIGHT_ON;
-//                 }
-//                 break;
-//             }
-//         }
-
-//         switch (right_bsm_state) {
-//             case LIGHT_OFF: {
-//                 if (bsm_danger.right_danger) {  
-//                     right_bsm_state = LIGHT_ON;
-//                     // TODO: WRITE A 1 ON BACK->FRONT BLE
-//                     send_blindspot_warning(m_conn_handle, &m_lbs, 1);
-//                 } else {
-//                     right_bsm_state = LIGHT_OFF;
-//                 }
-//                 break;
-//             }
-//             case LIGHT_ON: {
-//                 if (!bsm_danger.right_danger) {
-//                     right_bsm_state = LIGHT_OFF;
-//                     // TODO: WRITE A 1 ON BACK->FRONT BLE
-//                     send_blindspot_warning(m_conn_handle, &m_lbs, 1);
-//                 } else {
-//                     right_bsm_state = LIGHT_ON;
-//                 }
-//                 break;
-//             }
-//         }
-
-//         nrf_delay_ms(250);
-//         NRF_LOG_FLUSH();
-//         idle_state_handle();
-//     }
-// }
 
 
 // /**

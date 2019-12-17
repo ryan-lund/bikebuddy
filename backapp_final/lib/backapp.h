@@ -3,9 +3,9 @@
 /* Defines for blind spot monitor system */
 #define BSM_VARS
 
-#define BSM_LEFT_TRIG_PIN 4
+#define BSM_LEFT_TRIG_PIN 3
 #define BSM_LEFT_ECHO_PIN 5
-#define BSM_RIGHT_TRIG_PIN 28
+#define BSM_RIGHT_TRIG_PIN 19
 #define BSM_RIGHT_ECHO_PIN 29
 
 #define BSM_THRESHOLD 122 // distance in cm
@@ -17,7 +17,7 @@
 
 #define LEFT_PIN 30
 #define RIGHT_PIN 31
-#define TAIL_PIN 5//23
+#define TAIL_PIN 22//23
 #define BRAKE_PIN 3
 
 /* Defines for Hall Effect Driver */

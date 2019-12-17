@@ -117,7 +117,7 @@ int main(void)
     bsm_init();
     virtual_timer_init();
     lights_init();
-    hall_effect_init();
+    //hall_effect_init();
     nrf_delay_ms(3000);
 
     // Start execution.
@@ -134,14 +134,17 @@ int main(void)
     bsm_dist_t bsm_dist;
     uint8_t count = 0;
     while (1) {
-        nrf_delay_ms(250);
-    
+        nrf_delay_ms(500);
+        bsm_danger = bsm_get_danger();
+            bsm_dist = bsm_get_dist();
+            NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
+            NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
         switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
                     left_bsm_state = LIGHT_ON;
                     // TODO: WRITE A 0 ON BACK->FRONT BLE
-                    send_blindspot_warning(m_conn_handle, &m_lbs, 0);
+                    send_blindspot_warning(m_conn_handle, &m_lbs, 2+right_bsm_state);
                     nrf_gpio_pin_set(22);
                 } else {
                     left_bsm_state = LIGHT_OFF;
@@ -153,7 +156,7 @@ int main(void)
                 if (!bsm_danger.left_danger) {
                     left_bsm_state = LIGHT_OFF;
                     // TODO: WRITE A 0 ON BACK->FRONT BLE
-                    send_blindspot_warning(m_conn_handle, &m_lbs, 0);
+                    send_blindspot_warning(m_conn_handle, &m_lbs, right_bsm_state);
                     nrf_gpio_pin_clear(22);
                 } else {
                     left_bsm_state = LIGHT_ON;
@@ -168,7 +171,7 @@ int main(void)
                 if (bsm_danger.right_danger) {  
                     right_bsm_state = LIGHT_ON;
                     // TODO: WRITE A 1 ON BACK->FRONT BLE
-                    send_blindspot_warning(m_conn_handle, &m_lbs, 1);
+                    send_blindspot_warning(m_conn_handle, &m_lbs, (left_bsm_state << 1) + 1);
                     nrf_gpio_pin_set(21);
                 } else {
                     right_bsm_state = LIGHT_OFF;
@@ -180,7 +183,7 @@ int main(void)
                 if (!bsm_danger.right_danger) {
                     right_bsm_state = LIGHT_OFF;
                     // TODO: WRITE A 1 ON BACK->FRONT BLE
-                    send_blindspot_warning(m_conn_handle, &m_lbs, 1);
+                    send_blindspot_warning(m_conn_handle, &m_lbs, (left_bsm_state << 1));
                     nrf_gpio_pin_clear(21);
                 } else {
                     right_bsm_state = LIGHT_ON;
@@ -190,26 +193,27 @@ int main(void)
             }
         }
 
-        if (count == 3) {
-            float speed = hall_effect_get_speed();
-            float distance = hall_effect_get_dist();
-            uint32_t time = hall_effect_get_time();
-            uint8_t data[8];
-            NRF_LOG_INFO("Sending Speed Distance Notification");
-            memcpy(data, &speed, sizeof(speed));
-            memcpy(data+4, &distance, sizeof(distance));
-            memcpy(data+8, &time, sizeof(time));
-            ble_send_speed(m_conn_handle, &m_lbs, data);
-            bsm_danger = bsm_get_danger();
-            bsm_dist = bsm_get_dist();
-            NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
-            NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
-            count = 0;
-        } else {
-            count += 1;
-        }
-        nrf_delay_ms(250);
-        NRF_LOG_FLUSH();
+    //     if (count == 3) {
+    //         float speed = hall_effect_get_speed();
+    //         float distance = hall_effect_get_dist();
+    //         uint32_t time = hall_effect_get_time();
+    //         uint8_t data[8];
+    //         NRF_LOG_INFO("Sending Speed Distance Notification");
+    //         memcpy(data, &speed, sizeof(speed));
+    //         memcpy(data+4, &distance, sizeof(distance));
+    //         memcpy(data+8, &time, sizeof(time));
+    //         ble_send_speed(m_conn_handle, &m_lbs, data);
+    //         bsm_danger = bsm_get_danger();
+    //         bsm_dist = bsm_get_dist();
+    //         NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
+    //         NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
+    //         count = 0;
+    //     } else {
+    //         count += 1;
+    //     }
+    //     nrf_delay_ms(250);
+    //     NRF_LOG_FLUSH();
+    // }
     }
 }
 

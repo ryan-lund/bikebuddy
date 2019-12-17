@@ -116,7 +116,7 @@ int main(void)
         memcpy(data, &speed, sizeof(speed));
         memcpy(data+4, &distance, sizeof(distance));
         memcpy(data+8, &time, sizeof(time));
-        send_speeddistance(m_conn_handle, &m_lbs, data);
+        ble_send_speed(m_conn_handle, &m_lbs, data);
         // bsm_danger = bsm_get_danger();
         // NRF_LOG_HEXDUMP_INFO(&bsm_danger, sizeof(bsm_danger));
         // NRF_LOG_INFO("Main Loop Started.");

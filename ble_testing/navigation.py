@@ -1,10 +1,10 @@
 import requests
-
 from urllib.parse import urlencode
 
 HEADERS = {
     'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
 }
+
 def get_geocode(location):
     address, city, state = location.split('-')
     params = {
@@ -28,7 +28,7 @@ def get_directions(start, end):
     directions = call.json()
     turn_by_turn = []
     for step in directions['features'][0]['properties']['segments'][0]['steps']:
-        turn_by_turn.append([float(step['distance']), parse_nav_direction(step['instruction']), parse_nav_waypoint(step['instruction'])])
+        turn_by_turn.append([float(step['distance']), parse_nav_direction(step['instruction']), replace_with_abbreviation(parse_nav_waypoint(step['instruction']))])
     return turn_by_turn
 
 def parse_nav_direction(instruction):
@@ -54,7 +54,15 @@ def parse_nav_waypoint(instruction):
     else:
         return ''
 
-abbreviations = {'Drive': 'Dr', 'Boulevard': ''}
+abbreviations = {'Drive': 'Dr', 'Boulevard': 'Blvd', 'Street': 'St', 'Avenue':'Ave', 'Road':' Rd'}
 def replace_with_abbreviation(waypoint):
-    shortened_waypoint = waypoint.split(' ')
-    return 
+    if waypoint:
+        split_waypoint = waypoint.split()
+        waypoint_type = split_waypoint[-1]
+        if waypoint_type in abbreviations.keys():
+            print(' '.join(split_waypoint[:-1]+[abbreviations[waypoint_type]]))
+            return ' '.join(split_waypoint[:-1]+[abbreviations[waypoint_type]])
+        else:
+            return waypoint
+    else:
+        return waypoint

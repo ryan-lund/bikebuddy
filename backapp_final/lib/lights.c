@@ -4,6 +4,7 @@
 #include "app_util.h"
 #include "nrf_gpio.h"
 #include "lights.h"
+#include "nrf_delay.h"
 #include "virtual_timer.h"
 
 int left_timer_id = 0;
@@ -11,6 +12,18 @@ int right_timer_id = 0;
 
 bool _left = 0;
 bool _right = 0;
+
+void press_button(int pin, int presses) {
+	int i;
+	for (i = 0; i < presses; i++) {
+		nrf_gpio_pin_set(TAIL_PIN);
+		nrf_delay_ms(50);
+		nrf_gpio_pin_clear(TAIL_PIN);
+		nrf_delay_ms(50);
+		nrf_gpio_pin_set(TAIL_PIN);
+	}
+}
+
 void lights_init(void) {
 	// configure pins as outputs
 	// 4: left
@@ -25,8 +38,10 @@ void lights_init(void) {
 	// insure that all pins are set to low
 	nrf_gpio_pin_clear(LEFT_PIN);
 	nrf_gpio_pin_clear(RIGHT_PIN); 
-	nrf_gpio_pin_clear(TAIL_PIN);
 	nrf_gpio_pin_clear(BRAKE_PIN);
+	nrf_gpio_pin_set(TAIL_PIN);
+
+	//press_button(TAIL_PIN, 3);
 }
 
 void toggle_left(void) {
@@ -59,6 +74,11 @@ void set_brake(bool set_val) {
 }
 
 void set_tail(bool set_val) {
+	// if (set_val) {
+	// 	press_button(TAIL_PIN, 1);
+	// } else{
+	// 	press_button(TAIL_PIN, 3);
+	// }
 	nrf_gpio_pin_clear(TAIL_PIN);
 	if (set_val) {
 		nrf_gpio_pin_toggle(TAIL_PIN);

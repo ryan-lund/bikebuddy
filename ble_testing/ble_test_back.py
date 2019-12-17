@@ -13,8 +13,8 @@ HEADERS = {
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
 # FRONT_MAC = "F5:0C:E1:0F:07:24"
 # FRONT_MAC = "D3:F1:86:3C:AA:E0"
-# BACK_MAC = "F9:CB:0F:79:E8:BB"
-BACK_MAC = "D3:F1:86:3C:AA:E0"
+BACK_MAC = "F9:CB:0F:79:E8:BB"
+# BACK_MAC = "D3:F1:86:3C:AA:E0"
 
 def get_geocode(location):
     address, city, state = location.split('-')
@@ -78,6 +78,7 @@ if __name__ == "__main__":
 
     print("Connecting to Back Module...")
     back_p = connect_bikebuddy_module(BACK_MAC)
+    # back_p.setDelegate(BikeBuddyDelegate())
     print("Connected to Back Module!")
     # Set up services and characteristics
 
@@ -101,22 +102,26 @@ if __name__ == "__main__":
 
     # front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
     # print(front_back_char)
-    # desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
-    # desc.write(bytes.fromhex('0100'))
+
 
 
     back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    back_blindspot_char = back_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print('Blind Spot: ' + str(back_blindspot_char))
+    desc = back_blindspot_char.getDescriptors(forUUID=0x2902)[0]
+    desc.write(bytes.fromhex('0100'))
+
     back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    print(back_backlight_char)
+    print('Backlight: ' + str(back_backlight_char))
 
     back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    print(back_speeddistance_char)
+    print('Speed: ' + str(back_speeddistance_char))
 
     try:
         while True:
             # print("waiting")
             # front_ctrl_char.write(bytes.fromhex('01'))
-            # while front_p.waitForNotifications(0.5):
+            # while back_p.waitForNotifications(0.5):
             #     print("got notification")
             # value = input("which:\n")
             # if value == 'BS':
@@ -132,10 +137,10 @@ if __name__ == "__main__":
             # if value == 'DIR':
             #     value = input("enter value:\n")
             #     front_direction_char.write(bytes.fromhex('{0}'.format(value)))
-            # value = input("Enter Value:\n")
+            # value = input("Enter Backlight Value:\n")
             # back_backlight_char.write(bytes.fromhex(value))
-            time.sleep(0.5)
-            print(back_speeddistance_char.read().hex())
+            print('Blind Spot: ' + str(back_blindspot_char.read().hex()))
+            print('Speed: ' + str(back_speeddistance_char.read().hex()))
 
     finally:
         # front_p.disconnect()

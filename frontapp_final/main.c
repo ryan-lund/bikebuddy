@@ -116,18 +116,17 @@ static void street_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_
 
 static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 0) {
-        display_set_leftBS(false);
-        // display_set_rightBS(false);
-    } else if (data[0] == 1) {
+    bool left_blind = (data[0] >> 1) & 1;
+    bool right_blind = data[0] & 1;
+    if (left_blind) {
         display_set_leftBS(true);
-        // display_set_rightBS(false);
-    } else if (data[0] == 2) {
-        // display_set_leftBS(false);
-        display_set_rightBS(false);
-    } else if (data[0] == 3) {
-        // display_set_leftBS(true);
+    } else {
+        display_set_leftBS(false);
+    }
+    if (right_blind) {
         display_set_rightBS(true);
+    } else {
+        display_set_rightBS(false);
     }
 }
 
@@ -343,7 +342,7 @@ int main(void)
         // ride_button_state = get_start_ride_button_state();
 
         if (ble_connected) {
-            nrf_delay_ms(50);
+            nrf_delay_ms(250);
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {
@@ -375,8 +374,10 @@ int main(void)
                         // TURN LIGHT ON
                         toggle_headlight();
                         // TODO: toggle_taillight_char();
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, 6);
                         head_light_state = ON;
                     } else {
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, 7);
                         head_light_state = OFF;
                     }
                     break;
@@ -387,9 +388,11 @@ int main(void)
                     if (light_val > HEADLIGHT_THRESHOLD) {
                         // TURN LIGHT OFF
                         toggle_headlight();
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, 7);
                         // TODO: toggle_taillight_char();
                         head_light_state = OFF;
                     } else {
+                        ble_send_backlight_command(m_conn_handle, &m_lbs, 6);
                         head_light_state = ON;
                     }
                     break;

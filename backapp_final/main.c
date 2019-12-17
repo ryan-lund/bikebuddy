@@ -107,6 +107,7 @@ int main(void)
     advertising_init();
     conn_params_init();
     bsm_init();
+    //hall_effect_init();
     virtual_timer_init();
     lights_init();
     nrf_delay_ms(3000);
@@ -123,6 +124,7 @@ int main(void)
 
     bsm_danger_t bsm_danger;
     bsm_dist_t bsm_dist;
+    uint32_t count = 0;
     while (1) {
         bsm_danger = bsm_get_danger();
         bsm_dist = bsm_get_dist();
@@ -181,6 +183,13 @@ int main(void)
                 }
                 break;
             }
+        }
+
+        if (count < 3) {
+            count++;
+        } else {
+
+            // TODO: poll hall effect and send data
         }
 
         nrf_delay_ms(250);

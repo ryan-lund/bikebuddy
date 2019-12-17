@@ -25,6 +25,7 @@
 #include "nrf_log_default_backends.h"
 
 #include "types.h"
+#include "hall_effect.h"
 #include "bsm.h"
 #include "lights.h"
 #include "virtual_timer.h"
@@ -109,6 +110,7 @@ int main(void)
     bsm_init();
     virtual_timer_init();
     lights_init();
+    hall_effect_init();
     nrf_delay_ms(3000);
 
     // Start execution.
@@ -123,22 +125,10 @@ int main(void)
 
     bsm_danger_t bsm_danger;
     bsm_dist_t bsm_dist;
+    uint8_t count = 0;
     while (1) {
         nrf_delay_ms(250);
-        float speed = 4.20;
-        float distance = 13.37;
-        uint32_t time = 420;
-        uint8_t data[8];
-        NRF_LOG_INFO("Sending Speed Distance Notification");
-        memcpy(data, &speed, sizeof(speed));
-        memcpy(data+4, &distance, sizeof(distance));
-        memcpy(data+8, &time, sizeof(time));
-        ble_send_speed(m_conn_handle, &m_lbs, data);
-        bsm_danger = bsm_get_danger();
-        bsm_dist = bsm_get_dist();
-        NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
-        NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
-
+    
         switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
@@ -192,9 +182,27 @@ int main(void)
                 break;
             }
         }
+
+        if (count == 3) {
+            float speed = hall_effect_get_speed();
+            float distance = hall_effect_get_dist();
+            uint32_t time = hall_effect_get_time();
+            uint8_t data[8];
+            NRF_LOG_INFO("Sending Speed Distance Notification");
+            memcpy(data, &speed, sizeof(speed));
+            memcpy(data+4, &distance, sizeof(distance));
+            memcpy(data+8, &time, sizeof(time));
+            ble_send_speed(m_conn_handle, &m_lbs, data);
+            bsm_danger = bsm_get_danger();
+            bsm_dist = bsm_get_dist();
+            NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
+            NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
+            count = 0;
+        } else {
+            count += 1;
+        }
         nrf_delay_ms(250);
         NRF_LOG_FLUSH();
-        idle_state_handle();
     }
 }
 

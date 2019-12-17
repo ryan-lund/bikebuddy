@@ -16,4 +16,4 @@ float hall_effect_get_dist(void);
 
 float hall_effect_get_speed(void);
 
-float hall_effect_get_time(void);
+uint32_t hall_effect_get_time(void);

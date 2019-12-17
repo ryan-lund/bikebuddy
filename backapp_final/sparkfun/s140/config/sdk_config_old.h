@@ -4323,7 +4323,7 @@
 // <e> NRFX_TWI_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef NRFX_TWI_CONFIG_LOG_ENABLED
-#define NRFX_TWI_CONFIG_LOG_ENABLED 1
+#define NRFX_TWI_CONFIG_LOG_ENABLED 0
 #endif
 // <o> NRFX_TWI_CONFIG_LOG_LEVEL  - Default Severity level
  
@@ -5778,7 +5778,7 @@
 // <e> TWI_ENABLED - nrf_drv_twi - TWI/TWIM peripheral driver - legacy layer
 //==========================================================
 #ifndef TWI_ENABLED
-#define TWI_ENABLED 1
+#define TWI_ENABLED 0
 #endif
 // <o> TWI_DEFAULT_CONFIG_FREQUENCY  - Frequency
  
@@ -5824,7 +5824,7 @@
 // <e> TWI0_ENABLED - Enable TWI0 instance
 //==========================================================
 #ifndef TWI0_ENABLED
-#define TWI0_ENABLED 1
+#define TWI0_ENABLED 0
 #endif
 // <q> TWI0_USE_EASY_DMA  - Use EasyDMA (if present)
  
@@ -6191,7 +6191,7 @@
 // <i> will fail.
 
 #ifndef APP_TIMER_CONFIG_OP_QUEUE_SIZE
-#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 15
+#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 10
 #endif
 
 // <q> APP_TIMER_CONFIG_USE_SCHEDULER  - Enable scheduling app_timer events to app_scheduler
@@ -7320,13 +7320,13 @@
 // <e> NRF_QUEUE_ENABLED - nrf_queue - Queue module
 //==========================================================
 #ifndef NRF_QUEUE_ENABLED
-#define NRF_QUEUE_ENABLED 1
+#define NRF_QUEUE_ENABLED 0
 #endif
 // <q> NRF_QUEUE_CLI_CMDS  - Enable CLI commands specific to the module
  
 
 #ifndef NRF_QUEUE_CLI_CMDS
-#define NRF_QUEUE_CLI_CMDS 1
+#define NRF_QUEUE_CLI_CMDS 0
 #endif
 
 // </e>
@@ -7363,7 +7363,7 @@
  
 
 #ifndef NRF_TWI_MNGR_ENABLED
-#define NRF_TWI_MNGR_ENABLED 1
+#define NRF_TWI_MNGR_ENABLED 0
 #endif
 
 // <q> SLIP_ENABLED  - slip - SLIP encoding and decoding
@@ -7467,7 +7467,7 @@
  
 
 #ifndef NRF_CLI_ENABLED
-#define NRF_CLI_ENABLED 1
+#define NRF_CLI_ENABLED 0
 #endif
 
 // <o> NRF_CLI_ARGC_MAX - Maximum number of parameters passed to the command handler. 
@@ -7634,7 +7634,7 @@
 #endif
 // <o> NRF_LOG_BACKEND_UART_TX_PIN - UART TX pin 
 #ifndef NRF_LOG_BACKEND_UART_TX_PIN
-#define NRF_LOG_BACKEND_UART_TX_PIN 17
+#define NRF_LOG_BACKEND_UART_TX_PIN 6
 #endif
 
 // <o> NRF_LOG_BACKEND_UART_BAUDRATE  - Default Baudrate
@@ -9193,7 +9193,7 @@
 // <e> APP_TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================
 #ifndef APP_TIMER_CONFIG_LOG_ENABLED
-#define APP_TIMER_CONFIG_LOG_ENABLED 1
+#define APP_TIMER_CONFIG_LOG_ENABLED 0
 #endif
 // <o> APP_TIMER_CONFIG_LOG_LEVEL  - Default Severity level
  

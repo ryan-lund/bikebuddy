@@ -22,8 +22,10 @@ void lights_init(void) {
 
 	// insure that all pins are set to low
 	nrf_gpio_pin_clear(LEFT_PIN);
-	nrf_gpio_pin_clear(RIGHT_PIN); 
-	nrf_gpio_pin_clear(HEAD_PIN);
+	//nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_INPUT);
+
+	// head pin high
+	//nrf_gpio_pin_set(HEAD_PIN);
 }
 
 void press_button(int pin, int presses) {
@@ -62,18 +64,25 @@ void clear_right(void) {
 }
 
 void set_headlight(bool set_val) {
-	if (set_val) {
-		nrf_gpio_pin_clear(HEAD_PIN);
-		nrf_delay_ms(1);
+	// if (set_val) {
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+	// 	nrf_gpio_pin_clear(HEAD_PIN);
+	// 	nrf_delay_ms(1000);
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_INPUT);
+	// 	nrf_delay_ms(1000);
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+	// 	nrf_gpio_pin_clear(HEAD_PIN);
+	// 	nrf_delay_ms(1000);
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_INPUT);
+	// } else {
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_OUTPUT);
+	// 	nrf_gpio_pin_clear(HEAD_PIN);
+	// 	nrf_delay_ms(1000);
+	// 	nrf_gpio_pin_dir_set(HEAD_PIN, NRF_GPIO_PIN_DIR_INPUT);
+	// }
+	nrf_gpio_pin_clear(HEAD_PIN);
+	if (!set_val) {
 		nrf_gpio_pin_set(HEAD_PIN);
-		nrf_delay_ms(1);
-		nrf_gpio_pin_clear(HEAD_PIN);
-	} else {
-		nrf_gpio_pin_clear(HEAD_PIN);
-		nrf_delay_ms(1);
-		nrf_gpio_pin_set(HEAD_PIN);
-		nrf_delay_ms(1);
-		nrf_gpio_pin_clear(HEAD_PIN);
 	}
 }
 

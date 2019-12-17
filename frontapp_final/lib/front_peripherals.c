@@ -82,10 +82,11 @@ void drawArrow(uint8_t *buffer, direction dir) {
     } else if (dir == RIGHT) {
         Adafruit_GFX_drawRect(0, 37, 17, 10, WHITE);
         Adafruit_GFX_fillRect(0, 37, 17, 10, WHITE);
-        Adafruit_GFX_drawTriangle(32, 32, 17, 0, 17, 64, WHITE);
-        Adafruit_GFX_drawTriangle(32, 32, 17, 0, 17, 64, WHITE);
+        Adafruit_GFX_drawTriangle(64, 32, 17, 0, 17, 64, WHITE);
+        Adafruit_GFX_drawTriangle(64, 32, 17, 0, 17, 64, WHITE);
     } else if (dir == ARRIVE) {
-        Adafruit_GFX_drawRect(0, 37, 17, 10, WHITE);
+        Adafruit_GFX_drawRect(5, 10, 30, 30, WHITE);
+        Adafruit_GFX_fillRect(5, 10, 30, 30, WHITE);
     }
 }
 
@@ -242,8 +243,8 @@ void display_toggle_flash_left(void) {
 	} else {
 		virtual_timer_cancel(d_left_timer_id);
         _leftTurntog = 0;
-		d_left_timer_id = 0;
         drawLeftSmall();
+		d_left_timer_id = 0;
 	}
 }
 

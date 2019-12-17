@@ -58,6 +58,13 @@ void set_brake(bool set_val) {
 	}
 }
 
+void set_tail(bool set_val) {
+	nrf_gpio_pin_clear(TAIL_PIN);
+	if (set_val) {
+		nrf_gpio_pin_toggle(TAIL_PIN);
+	}
+}
+
 void toggle_flash_left(void) {
 	if (!left_timer_id && _left) {
 		left_timer_id = virtual_timer_start_repeated(FLASH_INTERVAL, toggle_left);

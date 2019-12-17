@@ -145,7 +145,7 @@ void SSD1306_command(nrf_drv_twi_t* m_twi_master, uint8_t i2caddr, uint8_t c)
   ret_code_t ret;
   uint8_t data[] = {0x00, c};
   ret = nrf_drv_twi_tx(m_twi_master, i2caddr, data, 2, false);
-  APP_ERROR_CHECK(ret);
+  //APP_ERROR_CHECK(ret);
 }
 
 
@@ -187,7 +187,7 @@ void SSD1306_display(nrf_drv_twi_t* m_twi_master, uint8_t i2caddr, uint8_t *buff
 
       ret_code_t ret;
       ret = nrf_drv_twi_tx(m_twi_master, i2caddr, tmpBuf, sizeof(tmpBuf), false);
-      APP_ERROR_CHECK(ret);
+      //APP_ERROR_CHECK(ret);
     }
 
 #ifdef TWBR

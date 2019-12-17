@@ -39,7 +39,7 @@ void lights_init(void) {
 	nrf_gpio_pin_clear(LEFT_PIN);
 	nrf_gpio_pin_clear(RIGHT_PIN); 
 	nrf_gpio_pin_clear(BRAKE_PIN);
-	nrf_gpio_pin_set(TAIL_PIN);
+	nrf_gpio_pin_clear(TAIL_PIN);
 
 	//press_button(TAIL_PIN, 3);
 }
@@ -79,9 +79,10 @@ void set_tail(bool set_val) {
 	// } else{
 	// 	press_button(TAIL_PIN, 3);
 	// }
-	nrf_gpio_pin_clear(TAIL_PIN);
 	if (set_val) {
-		nrf_gpio_pin_toggle(TAIL_PIN);
+		nrf_gpio_pin_set(TAIL_PIN);
+	} else {
+		nrf_gpio_pin_clear(TAIL_PIN);
 	}
 }
 

@@ -42,7 +42,7 @@
 #include "nrf_drv_twi.h"
 
 // Defines for sensor thresholds
-#define HEADLIGHT_THRESHOLD  2200
+#define HEADLIGHT_THRESHOLD  1600
 
 #define GYROZ_THRESHOLD 300
 #define ANGLE_THRESHOLD 15
@@ -50,12 +50,7 @@
 #define NAV_AUTOMATIC_TURN_DISTANCE 10
 
 #define BOARD_SPARKFUN_NRF52840_MINI    1
-#define PHOTORESISTOR_ADC_PIN NRF_SAADC_INPUT_AIN6
-
-NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
-
-/* Indicates if operation on TWI has ended. */
-volatile bool _twi_init = false;
+#define PHOTORESISTOR_ADC_PIN NRF_SAADC_INPUT_AIN7
 
 /* TWI instance. */
 
@@ -63,7 +58,7 @@ volatile bool _twi_init = false;
 #define SSD1306_CONFIG_SCL_PIN_0 05
 #define SSD1306_CONFIG_SDA_PIN_0 28
 #define SSD1306_CONFIG_SCL_PIN_1 29
-#define SSD1306_CONFIG_SDA_PIN_1 31
+#define SSD1306_CONFIG_SDA_PIN_1 30
 nrf_drv_twi_t m_twi_master0 = NRF_DRV_TWI_INSTANCE(0);
 nrf_drv_twi_t m_twi_master1 = NRF_DRV_TWI_INSTANCE(1);
 /**
@@ -134,6 +129,12 @@ float distance;
 char distance_string[8];
 static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
+    NRF_LOG_INFO("distance");
+    memcpy(&distance, data, sizeof(distance));
+    NRF_LOG_HEXDUMP_INFO(data, 20);
+    NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    memcpy(&distance_string, data+4, sizeof(distance_string));
+    NRF_LOG_INFO("%s", distance_string);
     display_set_disttowp(distance_string);
 }
 
@@ -184,41 +185,6 @@ static void services_init(void)
 
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
-}
-
-static void twi_scan(void) {
-  ret_code_t err_code;
-  uint8_t address;
-  uint8_t sample_data = 0;
-  bool detected_device = false;
-
-  //NRF_LOG_INFO("TWI scanner started.");
-  
-  if (!_twi_init) {
-    NRF_LOG_INFO("TWI is not init");
-    return;
-  }
-
-  for (address = 1; address <= 127; address++)
-  {
-    nrf_twi_mngr_transfer_t const test_transfer[] = {
-        NRF_TWI_MNGR_READ(address, sample_data, 1, 0),
-    };
-
-    err_code = nrf_twi_mngr_perform(&twi_mngr_instance, NULL, test_transfer, 1, NULL);
-      if (err_code == NRF_SUCCESS)
-      {
-          detected_device = true;
-          NRF_LOG_INFO("TWI device detected at address 0x%x.", address);
-          NRF_LOG_FLUSH();
-      }
-  }
-
-  if (!detected_device)
-  {
-      NRF_LOG_INFO("No device was found.");
-      NRF_LOG_FLUSH();
-  }
 }
 
 // ADC SETUP
@@ -342,7 +308,7 @@ int main(void)
         // ride_button_state = get_start_ride_button_state();
 
         if (ble_connected) {
-            nrf_delay_ms(250);
+            nrf_delay_ms(50);
             ride_button_state = false;
             switch (trip_state) {
                 case OFF: {

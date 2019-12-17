@@ -76,8 +76,8 @@ if __name__ == "__main__":
     # Set up services and characteristics
 
     front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    print(front_nav_char)
+    front_street_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print(front_street_char)
     # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
     # desc.write(bytes.fromhex('0100'))
 
@@ -118,33 +118,75 @@ if __name__ == "__main__":
 
     # front_p.setDelegate(BikeBuddyDelegate(back_backlight_char))
 
-    try:
-        while True:
-            # print("waiting for notification")
-            # front_ctrl_char.write(bytes.fromhex('01'))
-            # time.sleep(0.1)
-            # print(front_back_char.read())
-            # back_backlight_char.write(front_back_char.read())
+    print("Testing Navigation")
+    front_street_char.write(bytes('Haste St', 'utf-8'))
+    print("Testing Distance")
+    test_distance =13.370
+    test_distance_string='13.370'
+    front_distance_char.write(bytes.fromhex(float_to_hex(float(test_distance))) + bytes(test_distance_string, 'utf-8'))
+    print("Testing Direction")
+    front_direction_char.write(bytes.fromhex('01'))
 
-            value = input("which:\n")
-            if value == 'BS':
-                value = input("enter value:\n")
-                front_blind_char.write(bytes.fromhex('{0}'.format(value)))
-            if value == 'NAV':
-                value = input("enter value:\n")
-                front_nav_char.write(bytes(value, 'utf-8'))
-            if value == 'DIST':
-                distance_float = input("enter float:\n")
-                distance_string = input("enter string: \n")
-                front_distance_char.write(bytes.fromhex(float_to_hex(float(distance_float))) + bytes(distance_string, 'utf-8'))         
-            if value == 'DIR':
-                value = input("enter value:\n")
-                front_direction_char.write(bytes.fromhex('{0}'.format(value)))
-            # back_backlight_char.write(bytes.fromhex(value))
-    except Exception as e:
-        print(e)
-    finally:
-        front_p.disconnect()
-        # back_p.disconnect()
+    input('Press Enter')
+    print("Testing Navigation")
+    front_street_char.write(bytes('Dwight Way', 'utf-8'))
+    print("Testing Distance")
+    test_distance =200.10
+    test_distance_string='200.10'
+    front_distance_char.write(bytes.fromhex(float_to_hex(float(test_distance))) + bytes(test_distance_string, 'utf-8'))
+    print("Testing Direction")
+    front_direction_char.write(bytes.fromhex('00'))
+
+
+    input('Press Enter')
+    print("Testing Navigation")
+    front_street_char.write(bytes('College Ave', 'utf-8'))
+    print("Testing Distance")
+    test_distance =50.070
+    test_distance_string='50.070'
+    front_distance_char.write(bytes.fromhex(float_to_hex(float(test_distance))) + bytes(test_distance_string, 'utf-8'))
+    print("Testing Direction")
+    front_direction_char.write(bytes.fromhex('02'))
+
+
+    input('Press Enter')
+    print("Testing Navigation")
+    front_street_char.write(bytes('Cory Hall', 'utf-8'))
+    print("Testing Distance")
+    test_distance =2019.0
+    test_distance_string='2019.'
+    front_distance_char.write(bytes.fromhex(float_to_hex(float(test_distance))) + bytes(test_distance_string, 'utf-8'))
+    print("Testing Direction")
+    front_direction_char.write(bytes.fromhex('03'))
+
+    # try:
+    #     while True:
+    #         # print("waiting for notification")
+    #         # front_ctrl_char.write(bytes.fromhex('01'))
+    #         # time.sleep(0.1)
+    #         # print(front_back_char.read())
+    #         # back_backlight_char.write(front_back_char.read())
+
+    #         value = input("which:\n")
+    #         if value == 'BS':
+    #             value = input("enter value:\n")
+    #             front_blind_char.write(bytes.fromhex('{0}'.format(value)))
+    #         if value == 'NAV':
+    #             value = input("enter value:\n")
+    #             front_street_char.write(bytes(value, 'utf-8'))
+    #         if value == 'DIST':
+    #             distance_float = input("enter float:\n")
+    #             print(float_to_hex(float(distance_float)))
+    #             distance_string = input("enter string: \n")
+    #             front_distance_char.write(bytes.fromhex(float_to_hex(float(distance_float))) + bytes(distance_string, 'utf-8'))         
+    #         if value == 'DIR':
+    #             value = input("enter value:\n")
+    #             front_direction_char.write(bytes.fromhex('{0}'.format(value)))
+    #         # back_backlight_char.write(bytes.fromhex(value))
+    # except Exception as e:
+    #     print(e)
+    # finally:
+    #     front_p.disconnect()
+    #     # back_p.disconnect()
     front_p.disconnect()
     # back_p.disconnect()

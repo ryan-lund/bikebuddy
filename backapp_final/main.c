@@ -117,7 +117,7 @@ int main(void)
     bsm_init();
     virtual_timer_init();
     lights_init();
-    //hall_effect_init();
+    hall_effect_init();
     nrf_delay_ms(3000);
 
     // Start execution.
@@ -136,9 +136,9 @@ int main(void)
     while (1) {
         nrf_delay_ms(500);
         bsm_danger = bsm_get_danger();
-            bsm_dist = bsm_get_dist();
-            NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
-            NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
+        bsm_dist = bsm_get_dist();
+        NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
+        NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
         switch (left_bsm_state) {
             case LIGHT_OFF: {
                 if (bsm_danger.left_danger) {
@@ -193,27 +193,24 @@ int main(void)
             }
         }
 
-    //     if (count == 3) {
-    //         float speed = hall_effect_get_speed();
-    //         float distance = hall_effect_get_dist();
-    //         uint32_t time = hall_effect_get_time();
-    //         uint8_t data[8];
-    //         NRF_LOG_INFO("Sending Speed Distance Notification");
-    //         memcpy(data, &speed, sizeof(speed));
-    //         memcpy(data+4, &distance, sizeof(distance));
-    //         memcpy(data+8, &time, sizeof(time));
-    //         ble_send_speed(m_conn_handle, &m_lbs, data);
-    //         bsm_danger = bsm_get_danger();
-    //         bsm_dist = bsm_get_dist();
-    //         NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
-    //         NRF_LOG_INFO("Right: %d",bsm_dist.right_dist);
-    //         count = 0;
-    //     } else {
-    //         count += 1;
-    //     }
-    //     nrf_delay_ms(250);
-    //     NRF_LOG_FLUSH();
-    // }
+        if (count == 1) {
+            float speed = hall_effect_get_speed();
+            float distance = hall_effect_get_dist();
+            uint32_t time = hall_effect_get_time();
+            uint8_t data[8];
+            NRF_LOG_INFO("Sending Speed Distance Notification");
+            NRF_LOG_INFO("Speed:" NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(speed));
+            NRF_LOG_INFO("Distance:" NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+            NRF_LOG_INFO("Time: %d", time);
+            memcpy(data, &speed, sizeof(speed));
+            memcpy(data+4, &distance, sizeof(distance));
+            memcpy(data+8, &time, sizeof(time));
+            ble_send_speed(m_conn_handle, &m_lbs, data);
+            count = 0;
+        } else {
+            count += 1;
+        }
+        NRF_LOG_FLUSH();
     }
 }
 

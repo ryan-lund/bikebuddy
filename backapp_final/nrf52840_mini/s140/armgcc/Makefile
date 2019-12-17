@@ -60,6 +60,7 @@ SRC_FILES += \
   $(PROJ_DIR)/lib/virtual_timer.c \
   $(PROJ_DIR)/lib/virtual_timer_linked_list.c \
   $(PROJ_DIR)/lib/ble_lbs.c \
+  $(PROJ_DIR)/lib/hall_effect.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \

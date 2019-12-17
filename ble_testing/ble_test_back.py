@@ -140,7 +140,7 @@ if __name__ == "__main__":
             # value = input("Enter Backlight Value:\n")
             # back_backlight_char.write(bytes.fromhex(value))
             print('Blind Spot: ' + str(back_blindspot_char.read().hex()))
-            print('Speed: ' + str(back_speeddistance_char.read().hex()))
+            # print('Speed: ' + str(back_speeddistance_char.read().hex()))
 
     finally:
         # front_p.disconnect()

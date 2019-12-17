@@ -36,38 +36,38 @@ if __name__ == "__main__":
     print("Getting directions")
     directions = get_directions('2424 Haste Street-Berkeley-CA', '2516 Bancroft Way-Berkeley-CA')
 
-    # print("Connecting to Front Module...")
-    # front_p = connect_bikebuddy_module(FRONT_MAC)
-    # print("Connected to Front Module!")
+    print("Connecting to Front Module...")
+    front_p = connect_bikebuddy_module(FRONT_MAC)
+    print("Connected to Front Module!")
 
 
-    # front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    # front_street_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    # print(front_street_char)
+    front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    front_street_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print(front_street_char)
 
-    # front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    # print(front_direction_char)
+    front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print(front_direction_char)
 
-    # front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    # print(front_blind_char)
+    front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print(front_blind_char)
 
-    # front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
-    # print(front_light_char)
+    front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
+    print(front_light_char)
 
-    # front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
-    # print(front_distance_char)
+    front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    print(front_distance_char)
 
-    # front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
-    # print(front_back_char)
-    # desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
-    # desc.write(bytes.fromhex('0100'))
+    front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
+    print(front_back_char)
+    desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
+    desc.write(bytes.fromhex('0100'))
 
     for direction in directions:
         input("Press Enter for Next Direction")
         distance, distance_string, direction, street = direction[0], str(direction[0]), '0{0}'.format(str(direction[1])), direction[2]
         print(distance, distance_string, direction, street)
-        # front_street_char.write(bytes(street, 'utf-8'))
-        # front_distance_char.write(bytes.fromhex(float_to_hex(float(distance))) + bytes(distance_string, 'utf-8'))
-        # front_direction_char.write(bytes.fromhex(direction))
+        front_street_char.write(bytes(street, 'utf-8'))
+        front_distance_char.write(bytes.fromhex(float_to_hex(float(distance))) + bytes(distance_string, 'utf-8'))
+        front_direction_char.write(bytes.fromhex(direction))
 
-    # front_p.disconnect()
+    front_p.disconnect()

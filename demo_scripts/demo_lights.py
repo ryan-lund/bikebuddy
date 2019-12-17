@@ -10,7 +10,7 @@ from navigation import get_directions
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
 FRONT_MAC = "F5:0C:E1:0F:07:24"
 # FRONT_MAC = "D3:F1:86:3C:AA:E0"
-# BACK_MAC = "F9:CB:0F:79:E8:BB"
+BACK_MAC = "F9:CB:0F:79:E8:BB"
 
 class BikeBuddyDelegate(btle.DefaultDelegate):
     def __init__(self, back_backlight_char):
@@ -37,10 +37,6 @@ if __name__ == "__main__":
     front_p = connect_bikebuddy_module(FRONT_MAC)
     print("Connected to Front Module!")
 
-    # print("Connecting to Back Module...")
-    # back_p = connect_bikebuddy_module(BACK_MAC)
-    # print("Connected to Back Module!")
-
     front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
     front_street_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
     print('Street: ' + str(front_street_char))
@@ -62,20 +58,28 @@ if __name__ == "__main__":
     desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
     desc.write(bytes.fromhex('0100'))
 
-    # back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    # back_blindspot_char = back_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    # print('Blind Spot Back: ' + str(back_blindspot_char))
-    # desc = back_blindspot_char.getDescriptors(forUUID=0x2902)[0]
-    # desc.write(bytes.fromhex('0100'))
+    print("Connecting to Back Module...")
+    back_p = connect_bikebuddy_module(BACK_MAC)
+    print("Connected to Back Module!")
 
-    # back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    # print('Back light: ' + str(back_backlight_char))
+    back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    back_blindspot_char = back_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print('Blind Spot Back: ' + str(back_blindspot_char))
+    desc = back_blindspot_char.getDescriptors(forUUID=0x2902)[0]
+    desc.write(bytes.fromhex('0100'))
 
-    # back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    # print('Speed: ' + str(back_speeddistance_char))
+    back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print('Back light: ' + str(back_backlight_char))
+
+    back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print('Speed: ' + str(back_speeddistance_char))
 
     while True:
         time.sleep(0.2)
-        print(front_back_char.read().hex())
+        front_light_states = front_back_char.read()
+        back_backlight_char.write(front_light_states)
+        light_states = front_light_states[0]
+        brake, left, right, tail = (light_states & 1), (light_states & 2) >> 1, (light_states & 4) >> 2, (light_states & 8) >> 3
+        print('Brake: {0}, Left: {1}, Right: {2}, Tail: {3}'.format(brake, left, right, tail))
 
     front_p.disconnect()

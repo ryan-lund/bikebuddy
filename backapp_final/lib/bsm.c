@@ -37,6 +37,7 @@ void bsm_init(void) {
 uint32_t bsm_get_single_dist(uint32_t trig, uint32_t echo) {
   uint32_t start = 0;
   uint32_t stop = 0;
+  uint32_t timeout = read_timer();
   // send pulse to sensor
   NRF_LOG_INFO("Testing trig = %d, echo = %d", trig, echo);
   NRF_LOG_FLUSH();
@@ -45,9 +46,15 @@ uint32_t bsm_get_single_dist(uint32_t trig, uint32_t echo) {
   nrf_gpio_pin_clear(trig);
   nrf_delay_us(12);
   nrf_gpio_pin_set(trig);
-  while(!nrf_gpio_pin_read(echo));
+  while(!nrf_gpio_pin_read(echo)) {
+    // if(read_timer() - timeout > 100000)
+    //   return 777;
+  }
   start = read_timer();
-  while(nrf_gpio_pin_read(echo));
+  while(nrf_gpio_pin_read(echo)) {
+    // if(read_timer() - timeout > 100000)
+    //   return 777;
+  }
   stop = read_timer();
 
   NRF_LOG_INFO("Stop: %d, Start: %d", stop, start);

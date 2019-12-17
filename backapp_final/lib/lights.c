@@ -74,10 +74,14 @@ void set_brake(bool set_val) {
 }
 
 void set_tail(bool set_val) {
+	// if (set_val) {
+	// 	press_button(TAIL_PIN, 1);
+	// } else{
+	// 	press_button(TAIL_PIN, 3);
+	// }
+	nrf_gpio_pin_clear(TAIL_PIN);
 	if (set_val) {
-		press_button(TAIL_PIN, 1);
-	} else{
-		press_button(TAIL_PIN, 3);
+		nrf_gpio_pin_toggle(TAIL_PIN);
 	}
 }
 

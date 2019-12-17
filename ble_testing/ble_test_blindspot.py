@@ -13,7 +13,7 @@ HEADERS = {
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
 FRONT_MAC = "F5:0C:E1:0F:07:24"
 # FRONT_MAC = "D3:F1:86:3C:AA:E0"
-# BACK_MAC = "F9:CB:0F:79:E8:BB"
+BACK_MAC = "F9:CB:0F:79:E8:BB"
 
 def get_geocode(location):
     address, city, state = location.split('-')
@@ -64,15 +64,17 @@ def float_to_hex(f):
 
 if __name__ == "__main__":
     print("Getting directions")
-    # directions = get_directions('24'
+    # directions = get_directions('2424 Haste Street')
 
     print("Connecting to Front Module...")
     front_p = connect_bikebuddy_module(FRONT_MAC)
     print("Connected to Front Module!")
 
-    # print("Connecting to Back Module...")
-    # back_p = connect_bikebuddy_module(BACK_MAC)
-    # print("Connected to Back Module!")
+    print("Connecting to Back Module...")
+    back_p = connect_bikebuddy_module(BACK_MAC)
+    print("Connected to Back Module!")
+    
+
     # Set up services and characteristics
 
     front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
@@ -98,17 +100,17 @@ if __name__ == "__main__":
     desc = front_back_char.getDescriptors(forUUID=0x2902)[0]
     desc.write(bytes.fromhex('0100'))
 
-    # back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    # back_blindspot_char = back_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    # print('Blind Spot: ' + str(back_blindspot_char))
-    # desc = back_blindspot_char.getDescriptors(forUUID=0x2902)[0]
-    # desc.write(bytes.fromhex('0100'))
+    back_service = back_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    back_blindspot_char = back_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print('Blind Spot: ' + str(back_blindspot_char))
+    desc = back_blindspot_char.getDescriptors(forUUID=0x2902)[0]
+    desc.write(bytes.fromhex('0100'))
 
-    # back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    # print('Backlight: ' + str(back_backlight_char))
+    back_backlight_char = back_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print('Backlight: ' + str(back_backlight_char))
 
-    # back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    # print('Speed: ' + str(back_speeddistance_char))
+    back_speeddistance_char = back_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print('Speed: ' + str(back_speeddistance_char))
 
 
 
@@ -128,8 +130,11 @@ if __name__ == "__main__":
 
             value = input("which:\n")
             if value == 'BS':
-                value = input("enter value:\n")
-                front_blind_char.write(bytes.fromhex('{0}'.format(value)))
+                print(back_blindspot_char.read())
+                front_blind_char.write(back_blindspot_char.read())
+            if value == 'TURN':
+                print(front_back_char.read())
+                back_backlight_char.write(front_back_char.read())
             if value == 'NAV':
                 value = input("enter value:\n")
                 front_nav_char.write(bytes(value, 'utf-8'))

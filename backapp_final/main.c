@@ -134,7 +134,7 @@ int main(void)
     bsm_dist_t bsm_dist;
     uint8_t count = 0;
     while (1) {
-        nrf_delay_ms(500);
+        nrf_delay_ms(200);
         bsm_danger = bsm_get_danger();
         bsm_dist = bsm_get_dist();
         NRF_LOG_INFO("Left: %d", bsm_dist.left_dist);
@@ -193,7 +193,7 @@ int main(void)
             }
         }
 
-        if (count == 1) {
+        if (count == 2) {
             float speed = hall_effect_get_speed();
             float distance = hall_effect_get_dist();
             uint32_t time = hall_effect_get_time();

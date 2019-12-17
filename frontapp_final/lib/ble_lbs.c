@@ -68,7 +68,7 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
     }
     // DISTANCE CHAR HANDLER
     if (   (p_evt_write->handle == p_lbs->distance_char_handles.value_handle)
-        && (p_lbs->light_write_handler != NULL))
+        && (p_lbs->distance_write_handler != NULL))
     {
         p_lbs->distance_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
@@ -79,10 +79,10 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
         p_lbs->direction_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
     // FRONT LIGHT CHAR HANDLER
-    if (   (p_evt_write->handle == p_lbs->light_char_handles.value_handle)
-        && (p_lbs->light_write_handler != NULL))
+    if (   (p_evt_write->handle == p_lbs->speed_char_handles.value_handle)
+        && (p_lbs->speed_write_handler != NULL))
     {
-        p_lbs->light_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+        p_lbs->speed_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
     // BLIND SPOT CHAR HANDLER
     if (   (p_evt_write->handle == p_lbs->blind_char_handles.value_handle)
@@ -119,7 +119,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     // Initialize service structure.
     p_lbs->street_write_handler = p_lbs_init->street_write_handler;
     p_lbs->direction_write_handler = p_lbs_init->direction_write_handler;
-    p_lbs->light_write_handler = p_lbs_init->light_write_handler;
+    p_lbs->speed_write_handler = p_lbs_init->speed_write_handler;
     p_lbs->blind_write_handler = p_lbs_init->blind_write_handler;
     p_lbs->distance_write_handler = p_lbs_init->distance_write_handler;
 
@@ -213,7 +213,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 
     // Add LIGHT characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
-    add_char_params.uuid             = LBS_UUID_LIGHT_CHAR;
+    add_char_params.uuid             = LBS_UUID_SPEED_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
     add_char_params.init_len         = 20*sizeof(uint8_t*);
     add_char_params.max_len          = 20*sizeof(uint8_t*);
@@ -223,7 +223,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     add_char_params.read_access  = SEC_OPEN;
     add_char_params.write_access = SEC_OPEN;
 
-    return characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->light_char_handles);
+    return characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->speed_char_handles);
 }
 
 

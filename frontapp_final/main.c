@@ -153,13 +153,9 @@ static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uin
     }
 }
 
-static void light_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
+static void speed_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    if (data[0] == 1) {
-        NRF_LOG_INFO("Navigation Enabled");
-    } else {
-        NRF_LOG_HEXDUMP_INFO(data, 32);
-    }
+    display_set_speed((char *) data);
 }
 
 static void services_init(void)
@@ -179,7 +175,7 @@ static void services_init(void)
     init.direction_write_handler = direction_write_handler;
     init.distance_write_handler = distance_write_handler;
     init.blind_write_handler = blind_write_handler;
-    init.light_write_handler = light_write_handler;
+    init.speed_write_handler = speed_write_handler;
 
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);

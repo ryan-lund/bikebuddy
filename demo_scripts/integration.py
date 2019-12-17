@@ -38,7 +38,11 @@ def loop_fn():
         front_light_states = front_back_char.read()
         back_backlight_char.write(front_light_states)
         light_states = front_light_states[0]
-        front_blind_char.write(back_blindspot_char.read())
+        back_blindspot_states = back_blindspot_char.read()
+        front_blind_char.write(back_blindspot_states)
+        blindspot_states = back_blindspot_states[0]
+        left_blindspot, right_blindspot = (blindspot_states & 1), (blindspot_states & 2) >> 1
+        print("Left Blind: {0}, Right Blind: {1}".format(left_blindspot, right_blindspot))
         brake, left, right, tail = (light_states & 1), (light_states & 2) >> 1, (light_states & 4) >> 2, (light_states & 8) >> 3
         print('Brake: {0}, Left: {1}, Right: {2}, Tail: {3}'.format(brake, left, right, tail))
 

@@ -11,7 +11,7 @@ HEADERS = {
 }
 
 # FRONT_MAC, BACK_MAC = "E8:40:BC:F6:89:3E", "F9:CB:0F:79:E8:BB"
-# FRONT_MAC = "F5:0C:E1:0F:07:24"
+FRONT_MAC = "F5:0C:E1:0F:07:24"
 # FRONT_MAC = "D3:F1:86:3C:AA:E0"
 BACK_MAC = "F9:CB:0F:79:E8:BB"
 # BACK_MAC = "D3:F1:86:3C:AA:E0"
@@ -71,10 +71,10 @@ if __name__ == "__main__":
     # print("Getting directions")
     # directions = get_directions('24'
 
-    # print("Connecting to Front Module...")
-    # front_p = connect_bikebuddy_module(FRONT_MAC)
-    # front_p.setDelegate(BikeBuddyDelegate())
-    # print("Connected to Front Module!")
+    print("Connecting to Front Module...")
+    front_p = connect_bikebuddy_module(FRONT_MAC)
+    front_p.setDelegate(BikeBuddyDelegate())
+    print("Connected to Front Module!")
 
     print("Connecting to Back Module...")
     back_p = connect_bikebuddy_module(BACK_MAC)
@@ -82,26 +82,26 @@ if __name__ == "__main__":
     print("Connected to Back Module!")
     # Set up services and characteristics
 
-    # front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
-    # front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
-    # print(front_nav_char)
-    # # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
-    # # desc.write(bytes.fromhex('0100'))
+    front_service = front_p.getServiceByUUID("00001523-1212-efde-1523-785feabcd123")
+    front_nav_char = front_service.getCharacteristics("00001524-1212-efde-1523-785feabcd123")[0]
+    print(front_nav_char)
+    # desc = front_back_ctrl_char.getDescriptors(forUUID=0x2902)[0]
+    # desc.write(bytes.fromhex('0100'))
 
-    # front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
-    # print(front_direction_char)
+    front_direction_char = front_service.getCharacteristics("00001525-1212-efde-1523-785feabcd123")[0]
+    print(front_direction_char)
 
-    # front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
-    # print(front_blind_char)
+    front_blind_char = front_service.getCharacteristics("00001526-1212-efde-1523-785feabcd123")[0]
+    print(front_blind_char)
 
-    # front_light_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
-    # print(front_light_char)
+    front_speed_char = front_service.getCharacteristics("00001527-1212-efde-1523-785feabcd123")[0]
+    print(front_speed_char)
 
-    # front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
-    # print(front_distance_char)
+    front_distance_char = front_service.getCharacteristics("00001528-1212-efde-1523-785feabcd123")[0]
+    print(front_distance_char)
 
-    # front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
-    # print(front_back_char)
+    front_back_char = front_service.getCharacteristics("00001529-1212-efde-1523-785feabcd123")[0]
+    print(front_back_char)
 
 
 
@@ -142,7 +142,9 @@ if __name__ == "__main__":
             # print('Blind Spot: ' + str(back_blindspot_char.read().hex()))
             time.sleep(1)
             speed_distance = back_speeddistance_char.read()
-            print(str(round(hex_to_float(speed_distance[:4]),2)).ljust(6,'0'))
+            print(str(round(hex_to_float(speed_distance[:4]),2)).ljust(4,'0'))
+            speed_string = str(round(hex_to_float(speed_distance[:4]),2)).ljust(6,'0')
+            front_speed_char.write(bytes(speed_string, 'utf-8'))
             # print('Speed: ' + str(back_speeddistance_char.read()[0])
     finally:
         # front_p.disconnect()

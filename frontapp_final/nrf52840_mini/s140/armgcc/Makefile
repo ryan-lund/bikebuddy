@@ -2,7 +2,7 @@ PROJECT_NAME     := ble_app_blinky_nrf52840_mini
 TARGETS          := nrf52840_xxaa
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := /home/kkaly/Documents/nRF5_SDK
+SDK_ROOT := /home/bikebuddy/Documents/nRF5_SDK
 PROJ_DIR := ../../..
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \

@@ -60,11 +60,11 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t const * p_ble_evt)
     // NRF_LOG_INFO("uuid %d",p_evt_write->uuid.uuid)
     // NRF_LOG_FLUSH();
     
-    // NAV CHAR HANDLER
-    if (   (p_evt_write->handle == p_lbs->nav_char_handles.value_handle)
-        && (p_lbs->nav_write_handler != NULL))
+    // STREET CHAR HANDLER
+    if (   (p_evt_write->handle == p_lbs->street_char_handles.value_handle)
+        && (p_lbs->street_write_handler != NULL))
     {
-        p_lbs->nav_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
+        p_lbs->street_write_handler(p_ble_evt->evt.gap_evt.conn_handle, p_lbs, (uint8_t *)(p_evt_write->data), p_evt_write->len);
     }
     // DISTANCE CHAR HANDLER
     if (   (p_evt_write->handle == p_lbs->distance_char_handles.value_handle)
@@ -117,7 +117,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     ble_add_char_params_t add_char_params;
 
     // Initialize service structure.
-    p_lbs->nav_write_handler = p_lbs_init->nav_write_handler;
+    p_lbs->street_write_handler = p_lbs_init->street_write_handler;
     p_lbs->direction_write_handler = p_lbs_init->direction_write_handler;
     p_lbs->light_write_handler = p_lbs_init->light_write_handler;
     p_lbs->blind_write_handler = p_lbs_init->blind_write_handler;
@@ -154,9 +154,9 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
         return err_code;
     }
 
-    // Add NAV characteristic.
+    // Add STREET characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
-    add_char_params.uuid             = LBS_UUID_NAV_CHAR;
+    add_char_params.uuid             = LBS_UUID_STREET_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
     add_char_params.init_len         = 20*sizeof(uint8_t*);
     add_char_params.max_len          = 20*sizeof(uint8_t*);
@@ -166,9 +166,9 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
     add_char_params.read_access  = SEC_OPEN;
     add_char_params.write_access = SEC_OPEN;
 
-    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->nav_char_handles);
+    characteristic_add(p_lbs->service_handle, &add_char_params, &p_lbs->street_char_handles);
 
-    // Add Distance characteristic.
+    // Add DISTANCE characteristic.
     memset(&add_char_params, 0, sizeof(add_char_params));
     add_char_params.uuid             = LBS_UUID_DISTANCE_CHAR;
     add_char_params.uuid_type        = p_lbs->uuid_type;
@@ -227,7 +227,7 @@ uint32_t ble_lbs_init(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_init)
 }
 
 
-uint32_t ble_lbs_on_state_change(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t state)
+uint32_t ble_send_backlight_command(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t state)
 {
     ble_gatts_hvx_params_t params;
     uint16_t len = sizeof(state);

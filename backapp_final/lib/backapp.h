@@ -17,7 +17,7 @@
 
 #define LEFT_PIN 30
 #define RIGHT_PIN 31
-#define TAIL_PIN 23
+#define TAIL_PIN 2
 #define BRAKE_PIN 3
 
 /* Defines for Hall Effect Driver */

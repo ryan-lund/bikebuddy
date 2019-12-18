@@ -44,8 +44,8 @@
 // Defines for sensor thresholds
 #define HEADLIGHT_THRESHOLD  1600
 
-#define GYROZ_THRESHOLD 300
-#define ANGLE_THRESHOLD 15
+#define GYROZ_THRESHOLD 150 // 300 before
+#define ANGLE_THRESHOLD 8
 
 #define NAV_AUTOMATIC_TURN_DISTANCE 10
 
@@ -125,12 +125,13 @@ static void blind_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t
     }
 }
 
-float distance;
+float nav_distance = 0.0f;
+float last_nav_distance = 0.0f;
 char distance_string[6];
 static void distance_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
-    memcpy(&distance, data, sizeof(distance));
-    NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(distance));
+    memcpy(&nav_distance, data, sizeof(nav_distance));
+    NRF_LOG_INFO("Float " NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(nav_distance));
     memcpy(&distance_string, data+4, sizeof(distance_string));
     display_set_disttowp((char *)data+4);
     // set_nav_distance_remaining((float) *distance_string);
@@ -153,8 +154,19 @@ static void direction_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uin
     }
 }
 
+
+float new_distance = 0.0f;
+float delta_distance = 0.0f;
 static void speed_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t * data, uint16_t len)
 {
+    // memcpy(&new_distance, data+4, sizeof(new_distance));
+    // delta_distance = new_distance - last_nav_distance;
+    // nav_distance = nav_distance - delta_distance;
+    // char disttowp_buff[4];
+    // snprintf(disttowp_buff, sizeof(disttowp_buff), "%f", nav_distance);
+    // display_set_disttowp(disttowp_buff);
+    // char speed_string[4];
+    // memcpy(speed_string, data, sizeof(speed_string));
     display_set_speed((char *) data);
 }
 
